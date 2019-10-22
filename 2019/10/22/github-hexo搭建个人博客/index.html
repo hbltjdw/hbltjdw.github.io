@@ -2,9 +2,9 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Hello World | Hexo</title>
+  <title>github-hexo搭建个人博客 | Hexo</title>
   <meta name="keywords" content="">
-  <meta name="description" content="Hello World | Hexo">
+  <meta name="description" content="github-hexo搭建个人博客 | Hexo">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <meta name="description" content="github非对称加密认证 首先配置用户 12git config --global user.name &amp;quot;xxx&amp;quot;git config --global user.email &amp;quot;xxx@xx.com&amp;quot;  生成私钥公钥 1ssh-keygen -t rsa -C &amp;quot;your email@xxx.com&amp;quot;  公钥为id_rsa.pub,打开">
 <meta property="og:type" content="article">
@@ -287,9 +287,9 @@
 </aside>
 <div class="post">
     <div class="pjax">
-        <article id="post-hello-world" class="article article-type-post" itemscope itemprop="blogPost">
+        <article id="post-github-hexo搭建个人博客" class="article article-type-post" itemscope itemprop="blogPost">
     
-        <h1 class="article-title">Hello World</h1>
+        <h1 class="article-title">github-hexo搭建个人博客</h1>
     
     <div class="article-meta">
         
@@ -299,7 +299,7 @@
     </div>
     <div class="article-meta">
         
-        创建时间:<time class="date" title='更新时间: 2019-10-18 22:34:37'>2019-10-20 18:50</time>
+        创建时间:<time class="date" title='更新时间: 2019-10-22 18:41:24'>2019-10-22 18:40</time>
         
     </div>
     <div class="article-meta">
@@ -321,7 +321,7 @@
     
     <div class="toc-ref">
     
-        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Quick-Start"><span class="toc-text">Quick Start</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Create-a-new-post"><span class="toc-text">Create a new post</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Run-server"><span class="toc-text">Run server</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Generate-static-files"><span class="toc-text">Generate static files</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Deploy-to-remote-sites"><span class="toc-text">Deploy to remote sites</span></a></li></ol></li></ol>
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#github-page设置"><span class="toc-text">github page设置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hexo安装"><span class="toc-text">hexo安装</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#hexo发布、删除文章即相关配置"><span class="toc-text">hexo发布、删除文章即相关配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#将hexo发布到github"><span class="toc-text">将hexo发布到github</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Markdown常见语法"><span class="toc-text">Markdown常见语法</span></a></li></ol>
     
 <style>
     .left-col .switch-btn,
@@ -337,19 +337,111 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
+        <p><code>github</code>非对称加密认证</p>
+<p>首先配置用户</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git config --global user.name &quot;xxx&quot;</span><br><span class="line">git config --global user.email &quot;xxx@xx.com&quot;</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<p>生成私钥公钥</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa -C &quot;your email@xxx.com&quot;</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+<p>公钥为<code>id_rsa.pub</code>,打开,复制</p>
+<p>打开浏览器，登录<code>GitHub</code>，点击头像，选择<code>setting</code>，左侧有个<code>SSH and GPG keys</code> ，选择<code>new SSH key</code>,title随便写，将复制的内容黏贴上去. </p>
+<p>测试一下，<code>git bash</code>输入</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -T git@github.com</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
+
+<h2 id="github-page设置"><a href="#github-page设置" class="headerlink" title="github page设置"></a><code>github page</code>设置</h2><p><code>github page</code>是面向用户、组织和项目开放的公共静态页面搭建托管服务，站点可以被免费托管在 <code>Github</code> 上，你可以选择使用<code>Github Pages</code>默认提供的域名 <code>github.io</code> 或者自定义域名来发布站点，更便利地是你直接从你的<code>GitHub</code>存储库托管。只需编辑和推送你的<code>blog</code>，并且你的更改是实时的。</p>
+<p>登录<code>GitHub</code>并创建一个名为<code>username.github.io</code>的新存储库</p>
+<p><img src="D:%5Cgit%5Cmyblog%5Csource_posts%5Cgithub-hexo%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2%5Cgithub_page.png" alt="github_page"></p>
+<hr>
+<h2 id="hexo安装"><a href="#hexo安装" class="headerlink" title="hexo安装"></a><code>hexo</code>安装</h2><h2 id="hexo发布、删除文章即相关配置"><a href="#hexo发布、删除文章即相关配置" class="headerlink" title="hexo发布、删除文章即相关配置"></a><code>hexo</code>发布、删除文章即相关配置</h2><ul>
+<li><p><strong><code>hexo</code>目录分析</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">deploy：执行hexo deploy命令部署到GitHub上的内容目录</span><br><span class="line">public：执行hexo generate命令，输出的静态网页内容目录</span><br><span class="line">scaffolds：layout模板文件目录，其中的md文件可以添加编辑</span><br><span class="line">scripts：扩展脚本目录，这里可以自定义一些javascript脚本</span><br><span class="line">source：文章源码目录，该目录下的markdown和html文件均会被hexo处理。该页面对应repo的根目录，404文件、favicon.ico文件，CNAME文件等都应该放这里，该目录下可新建页面目录。</span><br><span class="line">drafts：草稿文章</span><br><span class="line">posts：发布文章</span><br><span class="line">themes：主题文件目录</span><br><span class="line">_config.yml：全局配置文件，大多数的设置都在这里</span><br><span class="line">package.json：应用程序数据，指明hexo的版本等信息，hexo框架的参数和所依赖插件</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>发布文章</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new [layout] “title”</span><br></pre></td></tr></table></figure>
+
+<p>layout有三种 <code>post</code>、<code>page</code> 和 <code>draft</code> </p>
+<p>在<code>_config.yml</code>中设置默认<code>layout</code>为<code>draft</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">default_layout: draft</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>生成草稿</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo new “title”</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>发布草稿</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo publish &quot;title“</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>生成静态文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo generate</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>发布到github</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo deploy</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p><strong>删除文章</strong></p>
+<ol>
+<li>到目录<code>/source/_posts</code>下删除相应的文章</li>
+<li><code>$ hexo g</code></li>
+<li><code>$ hexo d</code></li>
+</ol>
+</li>
+<li><p><strong>插入图片</strong></p>
+<ol>
+<li><p>进入博客根目录下,查看<code>_config.yml</code>文件,设置<code>post_asset_folder:true</code></p>
+</li>
+<li><p>设置 <code>post_asset_folder</code> 参数后，在新建博客文章时，<code>Hexo</code> 会自动建立一个与文章同名的文件夹，您可以把与该文章相关的所有资源都放到此文件夹内，这样就可以更方便的使用资源。</p>
+</li>
+<li><p>插件的安装<code>npm install https://github.com/CodeFalling/hexo-asset-image --save</code></p>
+</li>
+</ol>
+</li>
+</ul>
+<h2 id="将hexo发布到github"><a href="#将hexo发布到github" class="headerlink" title="将hexo发布到github"></a>将<code>hexo</code>发布到<code>github</code></h2><hr>
+<h2 id="Markdown常见语法"><a href="#Markdown常见语法" class="headerlink" title="Markdown常见语法"></a><code>Markdown</code>常见语法</h2><p><code>Markdown</code>是兼容<code>html</code>的语法的一种轻量级标记语言,它允许人们使用易读易写的纯文本格式编写文档。<br><code>Markdown</code>可以在有道云笔记、Mahua在线编辑、简书等进行编辑</p>
+<ul>
+<li><strong>标题</strong></li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 一级标题</span><br><span class="line">## 二级标题</span><br><span class="line">### 三级标题</span><br><span class="line">#### 四级标题</span><br><span class="line">##### 五级标题</span><br><span class="line">###### 六级标题</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>字体</strong></li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">**这是加粗的文字**</span><br><span class="line">*这是倾斜的文字*`</span><br><span class="line">***这是斜体加粗的文字***</span><br><span class="line">~~这是加删除线的文字~~</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>换行</strong><br>在上一行后面加两个以上空格，然后另起一行</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">我是第一行   </span><br><span class="line">我是第二行</span><br><span class="line">我是第二行</span><br></pre></td></tr></table></figure>
+
+<pre><code>效果如下:  </code></pre><p>我是第一行<br>我是第二行<br>我是第二行  </p>
+<ul>
+<li><strong>列表</strong><br>无序列表用 - + * 任何一种都可以  </li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- 列表内容</span><br><span class="line">+ 列表内容</span><br><span class="line">* 列表内容</span><br></pre></td></tr></table></figure>
+
+<p>  有序列表 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1.列表内容</span><br><span class="line">2.列表内容</span><br><span class="line">3.列表内容</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><strong>插入图片</strong></p>
+<ul>
+<li><p>插入本地图片</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">![avatar](/home/picture/1.png)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>插入网络图片</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">![avatar](http://baidu.com/pic/doge.png)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>把图片存入markdown文件</p>
+<p>用base64转码工具把图片转成一段字符串，然后把字符串填到基础格式中链接的那个位置.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">![avatar](data:image/png;base64,iVBORw0......)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
 
       
        <hr><span style="font-style: italic;color: gray;"> 转载请注明来源，欢迎对文章中的引用来源进行考证，欢迎指出任何有错误或不够清晰的表达。可以在下面评论区评论，也可以邮件至 jaytp@qq.com </span>
@@ -363,12 +455,12 @@
 
 
 <div class="article_copyright">
-    <p><span class="copy-title">文章标题:</span>Hello World</p>
+    <p><span class="copy-title">文章标题:</span>github-hexo搭建个人博客</p>
     
     <p><span class="copy-title">本文作者:</span><a href="javascript:void(0)" title="DW Jia">DW Jia</a></p>
-    <p><span class="copy-title">发布时间:</span>2019-10-20, 18:50:42</p>
-    <p><span class="copy-title">最后更新:</span>2019-10-18, 22:34:37</p>
-    <span class="copy-title">原始链接:</span><a class="post-url" href="/2019/10/20/hello-world/" title="Hello World">http://yoursite.com/2019/10/20/hello-world/</a>
+    <p><span class="copy-title">发布时间:</span>2019-10-22, 18:40:16</p>
+    <p><span class="copy-title">最后更新:</span>2019-10-22, 18:41:24</p>
+    <span class="copy-title">原始链接:</span><a class="post-url" href="/2019/10/22/github-hexo%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/" title="github-hexo搭建个人博客">http://yoursite.com/2019/10/22/github-hexo%E6%90%AD%E5%BB%BA%E4%B8%AA%E4%BA%BA%E5%8D%9A%E5%AE%A2/</a>
     <p>
         <span class="copy-title">版权声明:</span><i class="fa fa-creative-commons"></i> <a rel="license noopener" href="http://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" title="CC BY-NC-SA 4.0 International" target = "_blank">"署名-非商用-相同方式共享 4.0"</a> 转载请保留原文链接及作者。
     </p>
