@@ -6,12 +6,15 @@
   <title>github+hexo搭建个人博客 | Hexo</title>
 
   
-  <meta name="author" content="John Doe">
+  <meta name="author" content="DW Jia">
   
 
   
-  <meta name="description" content="github非对称加密认证github SSH私钥
-github page设置hexo安装hexo发布、删除文章即相关配置将hexo发布到githubMarkdown常见语法Markdown是兼容html的语法的一种轻量级标记语言,它允许人们使用易读易写的纯文本格式编写文档。Markdown可以在有">
+  <meta name="description" content="github非对称加密认证首先配置用户
+12git config --global user.name &amp;quot;xxx&amp;quot;git config --global user.email &amp;quot;xxx@xx.com&amp;quot;
+
+生成私钥公钥
+1ssh-keygen -t rsa -C">
   
 
   
@@ -80,23 +83,49 @@ github page设置hexo安装hexo发布、删除文章即相关配置将hexo发布
   <div class="article-content">
     <div class="entry">
       
-        <h2 id="github非对称加密认证"><a href="#github非对称加密认证" class="headerlink" title="github非对称加密认证"></a>github非对称加密认证</h2><p>github SSH私钥</p>
-<h2 id="github-page设置"><a href="#github-page设置" class="headerlink" title="github page设置"></a>github page设置</h2><h2 id="hexo安装"><a href="#hexo安装" class="headerlink" title="hexo安装"></a>hexo安装</h2><h2 id="hexo发布、删除文章即相关配置"><a href="#hexo发布、删除文章即相关配置" class="headerlink" title="hexo发布、删除文章即相关配置"></a>hexo发布、删除文章即相关配置</h2><h2 id="将hexo发布到github"><a href="#将hexo发布到github" class="headerlink" title="将hexo发布到github"></a>将hexo发布到github</h2><h2 id="Markdown常见语法"><a href="#Markdown常见语法" class="headerlink" title="Markdown常见语法"></a>Markdown常见语法</h2><p>Markdown是兼容html的语法的一种轻量级标记语言,它允许人们使用易读易写的纯文本格式编写文档。<br>Markdown可以在有道云笔记、Mahua在线编辑、简书等进行编辑</p>
-<ul>
-<li><p><strong>标题</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 一级标题</span><br><span class="line">## 二级标题</span><br><span class="line">### 三级标题</span><br><span class="line">#### 四级标题</span><br><span class="line">##### 五级标题</span><br><span class="line">###### 六级标题</span><br></pre></td></tr></table></figure></li>
-<li><p><strong>字体</strong></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">**这是加粗的文字**</span><br><span class="line">*这是倾斜的文字*`</span><br><span class="line">***这是斜体加粗的文字***</span><br><span class="line">~~这是加删除线的文字~~</span><br></pre></td></tr></table></figure></li>
-<li><p><strong>换行</strong><br>在上一行后面加两个以上空格，然后另起一行</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">我是第一行   </span><br><span class="line">我是第二行</span><br><span class="line">我是第二行</span><br></pre></td></tr></table></figure>
-<p>  效果如下:<br>我是第一行<br>我是第二行<br>我是第二行  </p>
-</li>
-<li><p><strong>列表</strong><br>  无序列表用 - + * 任何一种都可以  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- 列表内容</span><br><span class="line">+ 列表内容</span><br><span class="line">* 列表内容</span><br></pre></td></tr></table></figure>
-<p>  有序列表  </p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1.列表内容</span><br><span class="line">2.列表内容</span><br><span class="line">3.列表内容</span><br></pre></td></tr></table></figure></li>
-</ul>
+        <h2 id="github非对称加密认证"><a href="#github非对称加密认证" class="headerlink" title="github非对称加密认证"></a>github非对称加密认证</h2><p>首先配置用户</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git config --global user.name &quot;xxx&quot;</span><br><span class="line">git config --global user.email &quot;xxx@xx.com&quot;</span><br></pre></td></tr></table></figure>
 
+<p>生成私钥公钥</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -t rsa -C &quot;your email@xxx.com&quot;</span><br></pre></td></tr></table></figure>
+
+<p>公钥为id_rsa.pub,打开,复制</p>
+<p>打开浏览器，登录GitHub，点击头像，选择setting，左侧有个SSH and GPG keys ，选择new SSH key ,title随便写，将复制的内容黏贴上去. </p>
+<p>测试一下，git bash输入： ssh -T <a href="mailto:git@github.com" target="_blank" rel="noopener">git@github.com</a> </p>
+<h2 id="github-page设置"><a href="#github-page设置" class="headerlink" title="github page设置"></a>github page设置</h2><h2 id="hexo安装"><a href="#hexo安装" class="headerlink" title="hexo安装"></a>hexo安装</h2><h2 id="hexo发布、删除文章即相关配置"><a href="#hexo发布、删除文章即相关配置" class="headerlink" title="hexo发布、删除文章即相关配置"></a>hexo发布、删除文章即相关配置</h2><ul>
+<li><strong>删除文章</strong><ol>
+<li>到目录/source/_posts下删除相应的文章</li>
+<li>$ hexo g</li>
+<li>$ hexo d</li>
+</ol>
+</li>
+</ul>
+<h2 id="将hexo发布到github"><a href="#将hexo发布到github" class="headerlink" title="将hexo发布到github"></a>将hexo发布到github</h2><h2 id="Markdown常见语法"><a href="#Markdown常见语法" class="headerlink" title="Markdown常见语法"></a>Markdown常见语法</h2><p>Markdown是兼容html的语法的一种轻量级标记语言,它允许人们使用易读易写的纯文本格式编写文档。<br>Markdown可以在有道云笔记、Mahua在线编辑、简书等进行编辑</p>
+<ul>
+<li><strong>标题</strong></li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># 一级标题</span><br><span class="line">## 二级标题</span><br><span class="line">### 三级标题</span><br><span class="line">#### 四级标题</span><br><span class="line">##### 五级标题</span><br><span class="line">###### 六级标题</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>字体</strong></li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">**这是加粗的文字**</span><br><span class="line">*这是倾斜的文字*`</span><br><span class="line">***这是斜体加粗的文字***</span><br><span class="line">~~这是加删除线的文字~~</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>换行</strong><br>在上一行后面加两个以上空格，然后另起一行</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">我是第一行   </span><br><span class="line">我是第二行</span><br><span class="line">我是第二行</span><br></pre></td></tr></table></figure>
+
+<pre><code>效果如下:  </code></pre><p>我是第一行<br>我是第二行<br>我是第二行  </p>
+<ul>
+<li><strong>列表</strong><br>无序列表用 - + * 任何一种都可以  </li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">- 列表内容</span><br><span class="line">+ 列表内容</span><br><span class="line">* 列表内容</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>*<em>有序列表   *</em>  </li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1.列表内容</span><br><span class="line">2.列表内容</span><br><span class="line">3.列表内容</span><br></pre></td></tr></table></figure>
       
     </div>
 
@@ -130,7 +159,7 @@ github page设置hexo安装hexo发布、删除文章即相关配置将hexo发布
     Theme by <a href="https://github.com/CodeDaraW/Hacker" target="_blank">Hacker</a>
     </br>
     
-    &copy; 2019 John Doe
+    &copy; 2019 DW Jia
     
   </p>
 </footer>
