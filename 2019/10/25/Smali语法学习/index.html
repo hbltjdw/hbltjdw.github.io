@@ -1,0 +1,146 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Smali语法学习 | Hexo</title>
+
+  
+  <meta name="author" content="DW Jia">
+  
+
+  
+  <meta name="description" content="Smali 简介
+​        Dalvik虚拟机是google专门为Android平台设计的一款虚拟机,区别于标准 Java 虚拟机 JVM 的 class 文件格式，Dalvik VM 拥有专属的 DEX 可执行文件格式和指令集代码。smali 和 baksmali 是针对 DEX 执行文件">
+  
+
+  
+  
+  <meta name="keywords" content="">
+  
+
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+  <meta property="og:title" content="Smali语法学习"/>
+
+  <meta property="og:site_name" content="Hexo"/>
+
+  
+  <meta property="og:image" content="/favicon.ico"/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+</head>
+
+
+<body>
+<div class="blog">
+  <div class="content">
+
+    <header>
+  <div class="site-branding">
+    <h1 class="site-title">
+      <a href="/">Hexo</a>
+    </h1>
+    <p class="site-description"></p>
+  </div>
+  <nav class="site-navigation">
+    <ul>
+      
+        <li><a href="/">主页</a></li>
+      
+        <li><a href="/archives">归档</a></li>
+      
+    </ul>
+  </nav>
+</header>
+
+    <main class="site-main posts-loop">
+    <article>
+
+  
+    
+    <h3 class="article-title"><span>Smali语法学习</span></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2019/10/25/Smali语法学习/" rel="bookmark">
+        <time class="entry-date published" datetime="2019-10-25T13:26:36.000Z">
+          2019-10-25
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <ul>
+<li><p>Smali 简介</p>
+<p>​        <code>Dalvik虚拟机</code>是google专门为<code>Android</code>平台设计的一款虚拟机,区别于标准 Java 虚拟机 JVM 的 class 文件格式，<code>Dalvik VM</code> 拥有专属的 DEX 可执行文件格式和指令集代码。<code>smali</code> 和 <code>baksmali</code> 是针对 DEX 执行文件格式的汇编器和反汇编器，反汇编后 DEX 文件会产生<code>.smali</code> 后缀的代码文件.<code>smali</code>代码拥有特定的格式与语法，<code>smali</code>语言是对 <code>Dalvik</code> 虚拟机字节码的一种解释。</p>
+<p>​        虽然主流的 DEX 可执行文件反汇编工具不少，如 <code>Dedexer</code>、<code>IDA Pro</code> 和 <code>dex2jar+jd-gui</code>，但 <code>Smali</code>提供反汇编功能的同时，也提供了打包反汇编代码重新生成DEX的功能，因此 <code>Smali</code>被广泛地用于 APP 广告注入、汉化和破解，ROM 定制等方面。</p>
+<p>​        简单来说就是用java写的代码编译成class打包成<code>dex</code>文件后使用<code>baksmali</code>程序逆向回来的一种语法。</p>
+</li>
+<li><p>Smali 学习</p>
+<p>​        在<code>Android studio</code>中查找插件<code>java2smali</code>然后就可以把任何JAVA代码转换成<code>smali</code>进行学习.</p>
+<p>​        然后可以对照着java代码来逐行分析这个<code>smali</code>文件。注意.line关键字就是用来描述当前代码在java源文件中的行数。然后你可以通过对照两组代码的方法进行反推。这样就可以很轻松的学会看<code>smali</code>文件。</p>
+</li>
+<li><p>参考文章</p>
+<p><a href="https://blog.csdn.net/Kelaker/article/details/84403369" target="_blank" rel="noopener">Smali语法</a></p>
+<p><a href="https://www.jianshu.com/p/1a2e2da93b72" target="_blank" rel="noopener">Smali 语法解析——Hello World</a></p>
+<p><a href="https://github.com/JesusFreke/smali" target="_blank" rel="noopener">github Smali</a></p>
+<p><a href="https://source.android.google.cn/devices/tech/dalvik/dalvik-bytecode" target="_blank" rel="noopener">Dalvik 字节码</a></p>
+</li>
+</ul>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+  
+
+
+
+
+
+
+    </main>
+
+    <footer class="site-footer">
+  <p class="site-info">
+    Proudly powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and
+    Theme by <a href="https://github.com/CodeDaraW/Hacker" target="_blank">Hacker</a>
+    </br>
+    
+    &copy; 2019 DW Jia
+    
+  </p>
+</footer>
+    
+  </div>
+</div>
+</body>
+</html>
