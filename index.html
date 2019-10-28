@@ -59,6 +59,143 @@
 
   
     
+    <h3 class="article-title"><a href="/2019/10/28/adb总结/"><span>adb总结</span></a></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2019/10/28/adb总结/" rel="bookmark">
+        <time class="entry-date published" datetime="2019-10-28T14:55:07.000Z">
+          2019-10-28
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <h2 id="adb安装应用"><a href="#adb安装应用" class="headerlink" title="adb安装应用"></a>adb安装应用</h2><ul>
+<li><p>开启USB调试</p>
+<ol>
+<li>模拟器或者USB连接的手机,点击<code>设置</code>,连续点击<code>版本号</code>,进入<code>开发者选项</code></li>
+<li>进入<code>开发者选项</code>,打开<code>USB调试</code></li>
+</ol>
+</li>
+<li><p>adb安装应用</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb devices    				//查看设备是否在线</span><br><span class="line">adb install xxx.apk			//安装应用</span><br></pre></td></tr></table></figure>
+
+
+
+</li>
+</ul>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a href="https://www.jianshu.com/p/899fef07929f" target="_blank" rel="noopener">ADB总结</a></p>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+
+
+  <article>
+
+  
+    
+    <h3 class="article-title"><a href="/2019/10/28/apk手动签名/"><span>apk手动签名</span></a></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2019/10/28/apk手动签名/" rel="bookmark">
+        <time class="entry-date published" datetime="2019-10-28T14:48:49.000Z">
+          2019-10-28
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <h2 id="V1和V2签名"><a href="#V1和V2签名" class="headerlink" title="V1和V2签名"></a>V1和V2签名</h2><ol>
+<li>V1签名：<br>来自<code>JDK （ jarsigner ）</code>,对 zip 压缩包的每个文件进行验证，签名后还能对压缩包修改（移动/重新压缩文件）<br>对V1签名的 apk/jar 解压,在 META-INF 存放签名文件( MANIFEST.MF, CERT.SF, CERT.RSA )<br>其中 <code>MANIFEST.MF</code> 文件保存所有文件的 SHA1 指纹(除了 META-INF 文件),由此可知:<strong>V1签名是对压缩包中单个文件签名验证</strong></li>
+<li>V2签名：<br>来自 Google（apksigner），对 zip 压缩包的整个文件验证，签名后不能修改压缩包(包括 zipalign )<br>对V2签名的 apk 解压,没有发现签名文件,重新压缩后V2签名就失效, 由此可知: <strong>V2签名是对整个 APK 签名验证</strong></li>
+<li>V2签名优点：<br>签名更安全（不能修改压缩包）<br>签名验证时间更短（不需要解压验证），因此安装速度更快</li>
+</ol>
+<h2 id="V2签名过程"><a href="#V2签名过程" class="headerlink" title="V2签名过程"></a>V2签名过程</h2><ol>
+<li><p><code>zipalign</code> </p>
+<p>位于 Android SDK/build-tools/SDK 版本 /zipalign.exe<br>zipalign 是对 zip 包对齐的工具，使APK包内未压缩的数据有序排列对齐，从而减少 APP 运行时消耗</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">zipalign -v 4 in.apk out.apk 		//4字节对齐优化命令</span><br><span class="line">zipalign -c -v 4 in.apk 			//检查 APK 是否对齐</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>apksigner</code></p>
+<p>这个工具位于SDK目录的<code>build-tools</code>目录下。必须说明的是，v2签名方式时在<code>Android7.0</code>后才推出的，所以只有版本&gt;25的<code>SDK\build-tools\</code>中才能找到<code>apksigner.jar</code>.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">java -jar apksigner.jar sign           			//执行签名操作</span><br><span class="line">--ks 你的jks路径                                	//jks签名证书路径</span><br><span class="line">--ks-key-alias 你的alias           				//生成jks时指定的alias</span><br><span class="line">--ks-pass pass:你的密码          				//KeyStore密码</span><br><span class="line">--key-pass pass:你的密码   						//签署者的密码，即生成jks时指定alias对应的密码</span><br><span class="line">--out output.apk                         		//输出路径</span><br><span class="line">input.apk                                   	//被签名的apk</span><br></pre></td></tr></table></figure>
+
+<p>示例</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar apksigner.jar sign  --ks key.jks  --ks-key-alias releasekey  --ks-pass pass:pp123456  --key-pass pass:pp123456  --out output.apk  input.apk</span><br></pre></td></tr></table></figure>
+
+
+
+</li>
+</ol>
+<ol start="3">
+<li><p>检查是否签名成功</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar apksigner.jar verify -v my.apk</span><br></pre></td></tr></table></figure>
+
+
+
+</li>
+</ol>
+<p>##　参考文章</p>
+<p><a href="https://www.jianshu.com/p/e1e2fd05bb62" target="_blank" rel="noopener">Android开发之通过apksigner对apk进行v2签名</a></p>
+<p><a href="https://www.jianshu.com/p/db8751060146" target="_blank" rel="noopener">V1 和 V2 签名工具</a></p>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+
+
+  <article>
+
+  
+    
     <h3 class="article-title"><a href="/2019/10/25/Smali语法学习/"><span>Smali语法学习</span></a></h3>
     
   
@@ -735,67 +872,11 @@
 
 
 
-  <article>
-
-  
-    
-    <h3 class="article-title"><a href="/2019/10/20/hello-world/"><span>Hello World</span></a></h3>
-    
-  
-
-  <div class="article-top-meta">
-    <span class="posted-on">
-      <a href="/2019/10/20/hello-world/" rel="bookmark">
-        <time class="entry-date published" datetime="2019-10-20T10:50:42.879Z">
-          2019-10-20
-        </time>
-      </a>
-    </span>
-  </div>
-
-
-  
-
-  <div class="article-content">
-    <div class="entry">
-      
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="noopener">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="noopener">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="noopener">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">"My New Post"</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="noopener">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="noopener">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="noopener">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="noopener">Deployment</a></p>
-
-      
-    </div>
-
-  </div>
-
-  <div class="article-footer">
-    <div class="article-meta pull-left">
-
-    
-
-    
-
-    </div>
-
-    
-  </div>
-</article>
-
-
-
 
 <nav class="pagination">
   
+  
+  <a href="/page/2/" class="pagination-next">下一页</a>
   
 </nav>
     </main>
