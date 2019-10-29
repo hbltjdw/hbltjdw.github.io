@@ -1,0 +1,156 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>aar和jar文件简介 | Hexo</title>
+
+  
+  <meta name="author" content="DW Jia">
+  
+
+  
+  <meta name="description" content="前言​        在使用 Eclipse 开发 Android 的那个时代（其实也就几年前而已），如果想代码打包，只有 JAR 包一个方法，但是 JAR 只能把 Java 文件代码打包进去，如果要使用一个有布局和资源的库的话，除了将 JAR 放入 libs 外,还需要引入相关的资源和配置文件，十">
+  
+
+  
+  
+  <meta name="keywords" content="">
+  
+
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+  <meta property="og:title" content="aar和jar文件简介"/>
+
+  <meta property="og:site_name" content="Hexo"/>
+
+  
+  <meta property="og:image" content="/favicon.ico"/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+</head>
+
+
+<body>
+<div class="blog">
+  <div class="content">
+
+    <header>
+  <div class="site-branding">
+    <h1 class="site-title">
+      <a href="/">Hexo</a>
+    </h1>
+    <p class="site-description"></p>
+  </div>
+  <nav class="site-navigation">
+    <ul>
+      
+        <li><a href="/">主页</a></li>
+      
+        <li><a href="/archives">归档</a></li>
+      
+    </ul>
+  </nav>
+</header>
+
+    <main class="site-main posts-loop">
+    <article>
+
+  
+    
+    <h3 class="article-title"><span>aar和jar文件简介</span></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2019/10/29/aar和jar文件简介/" rel="bookmark">
+        <time class="entry-date published" datetime="2019-10-29T11:38:41.000Z">
+          2019-10-29
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>​        在使用 Eclipse 开发 Android 的那个时代（其实也就几年前而已），如果想代码打包，只有 <code>JAR</code> 包一个方法，但是 <code>JAR</code> 只能把 Java 文件代码打包进去，如果要使用一个有布局和资源的库的话，除了将 <code>JAR</code> 放入 libs 外,还需要引入相关的资源和配置文件，十分不优雅。</p>
+<p>​        Android Studio 出来之后，出现了一个新的方法，打包 <code>AAR</code> 文件 ，这个不仅可以把 Java 文件给打进去，还包含 AndroidManifest.xml 和资源文件等，使用的话，直接引入一个 <code>AAR</code> 文件就足够了，非常方便。</p>
+<h2 id="jar和aar的区别"><a href="#jar和aar的区别" class="headerlink" title="jar和aar的区别"></a>jar和aar的区别</h2><p>*.jar：只包含了class文件与清单文件，不包含资源文件，如图片等所有res中的文件。</p>
+<p>*.aar：包含所有资源，class以及res资源文件全部包含</p>
+<p>如果你只是一个简单的类库那么使用生成的.jar文件即可；如果你的是一个UI库，包含一些自己写的控件布局文件以及字体等资源文件那么就只能使用.aar文件。</p>
+<ol>
+<li><p>*.jar，JAR 文件就是 Java Archive File，顾名思意，它的应用是与 Java 息息相关的，是 Java 的一种文档格式。只包含了class文件与清单文件 ，不包含资源文件，如图片等所有res中的文件。找一个jar文件，然后修改后缀名为‘zip’或者‘rar’格式，然后解压该文件，打开解压后的文件夹，截图如下所示：</p>
+</li>
+<li><p>*.jar，JAR 文件就是 Java Archive File，顾名思意，它的应用是与 Java 息息相关的，是 Java 的一种文档格式。只包含了class文件与清单文件 ，不包含资源文件，如图片等所有res中的文件。</p>
+<h2 id="ARR文件结构"><a href="#ARR文件结构" class="headerlink" title="ARR文件结构"></a>ARR文件结构</h2></li>
+</ol>
+<p>aar包是Android Library Project的二进制发布包。</p>
+<p>文件的扩展名是aar，而且maven包类型也应该是aar， 不过这文件本身就是一个简单的zip文件，里面有如下的内容：</p>
+<ul>
+<li>/AndroidManifest.xml (必须)</li>
+<li>/classes.jar (必须)</li>
+<li>/res/ (必须)</li>
+<li>/R.txt (必须)</li>
+<li>/assets/ (可选)</li>
+<li>/libs/*.jar (可选)</li>
+<li>/jni/<abi>/*.so (可选)</abi></li>
+<li>/proguard.txt (可选)</li>
+<li>/lint.jar (可选)</li>
+</ul>
+<p>这些条目，都在zip文件的根目录下。</p>
+<p>R.txt 文件是 aapt –output-text-symbols 的输出。</p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a href="https://www.jianshu.com/p/d7ef84586949" target="_blank" rel="noopener">jar包与aar包文件的区别</a></p>
+<p><a href="https://www.jianshu.com/p/0a2572a63ed5" target="_blank" rel="noopener">Android中aar与jar的区别</a></p>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+  
+
+
+
+
+
+
+    </main>
+
+    <footer class="site-footer">
+  <p class="site-info">
+    Proudly powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and
+    Theme by <a href="https://github.com/CodeDaraW/Hacker" target="_blank">Hacker</a>
+    </br>
+    
+    &copy; 2019 DW Jia
+    
+  </p>
+</footer>
+    
+  </div>
+</div>
+</body>
+</html>

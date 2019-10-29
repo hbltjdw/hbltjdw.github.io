@@ -1,0 +1,175 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>如何分析一个程序 | Hexo</title>
+
+  
+  <meta name="author" content="DW Jia">
+  
+
+  
+  <meta name="description" content="编写一个安卓程序在 Android studio 中编写一个注册码的应用程序
+
+1234567891011121314151617181920protected void onCreate(Bundle savedInstanceState) &amp;#123;        super.onCreate">
+  
+
+  
+  
+  <meta name="keywords" content="">
+  
+
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+  <meta property="og:title" content="如何分析一个程序"/>
+
+  <meta property="og:site_name" content="Hexo"/>
+
+  
+  <meta property="og:image" content="/favicon.ico"/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+</head>
+
+
+<body>
+<div class="blog">
+  <div class="content">
+
+    <header>
+  <div class="site-branding">
+    <h1 class="site-title">
+      <a href="/">Hexo</a>
+    </h1>
+    <p class="site-description"></p>
+  </div>
+  <nav class="site-navigation">
+    <ul>
+      
+        <li><a href="/">主页</a></li>
+      
+        <li><a href="/archives">归档</a></li>
+      
+    </ul>
+  </nav>
+</header>
+
+    <main class="site-main posts-loop">
+    <article>
+
+  
+    
+    <h3 class="article-title"><span>如何分析一个程序</span></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2019/10/29/如何分析一个程序/" rel="bookmark">
+        <time class="entry-date published" datetime="2019-10-29T08:14:44.000Z">
+          2019-10-29
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <h2 id="编写一个安卓程序"><a href="#编写一个安卓程序" class="headerlink" title="编写一个安卓程序"></a>编写一个安卓程序</h2><p>在 Android studio 中编写一个注册码的应用程序</p>
+<p><img src="/2019/10/29/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F%5Capp.png" alt="app"></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line">        setContentView(R.layout.activity_main);</span><br><span class="line">        setTitle(R.string.unregister);</span><br><span class="line">        <span class="keyword">final</span> EditText edit_username = (EditText)findViewById(R.id.editText1);</span><br><span class="line">        <span class="keyword">final</span> EditText edit_sn = (EditText)findViewById(R.id.editText2);</span><br><span class="line">        <span class="keyword">final</span> Button btn_register = (Button)findViewById(R.id.button);</span><br><span class="line">        btn_register.setOnClickListener(<span class="keyword">new</span> View.OnClickListener()&#123;</span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span></span>&#123;</span><br><span class="line">                <span class="keyword">if</span> (!checkSN(edit_username.getText().toString().trim(),edit_sn.getText().toString().trim()))&#123;</span><br><span class="line">                    Toast.makeText(MainActivity.<span class="keyword">this</span>,R.string.unsuccessed,Toast.LENGTH_SHORT).show();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span>&#123;</span><br><span class="line">                    Toast.makeText(MainActivity.<span class="keyword">this</span>,R.string.successed,Toast.LENGTH_SHORT).show();</span><br><span class="line">                    btn_register.setEnabled(<span class="keyword">false</span>);</span><br><span class="line">                    setTitle(R.string.registered);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>checkSN用于验证用户名和注册码是否匹配.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">checkSN</span><span class="params">(String username, String sn)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span>&#123;</span><br><span class="line">            <span class="keyword">if</span> ((username == <span class="keyword">null</span>) || (username.length() == <span class="number">0</span>)) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> ((sn == <span class="keyword">null</span>) || (sn.length() != <span class="number">16</span>)) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            MessageDigest digest = MessageDigest.getInstance(<span class="string">"MD5"</span>);</span><br><span class="line">            digest.reset();</span><br><span class="line">            digest.update(username.getBytes());</span><br><span class="line">            String hexstr = <span class="string">""</span>;</span><br><span class="line">            StringBuffer hexString = <span class="keyword">new</span> StringBuffer();</span><br><span class="line">            <span class="keyword">byte</span>[] bytes = digest.digest();</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;bytes.length; i++)&#123;</span><br><span class="line">                <span class="keyword">if</span>(Integer.toHexString(<span class="number">0xFF</span> &amp; bytes[i]).length() &lt; <span class="number">2</span>)&#123;</span><br><span class="line">                    hexstr = <span class="string">"0"</span>+Integer.toHexString(<span class="number">0xFF</span> &amp; bytes[i]);</span><br><span class="line">                &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                    hexstr = Integer.toHexString(<span class="number">0xFF</span> &amp; bytes[i]);</span><br><span class="line">                &#125;</span><br><span class="line">                hexString.append(hexstr);</span><br><span class="line">            &#125;</span><br><span class="line">            StringBuilder sb = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> i =<span class="number">0</span>; i &lt; hexString.length();i+=<span class="number">2</span>)&#123;</span><br><span class="line">                sb.append(hexString.charAt(i));</span><br><span class="line">            &#125;</span><br><span class="line">            String userSN = sb.toString();</span><br><span class="line">            <span class="keyword">if</span>(!userSN.equalsIgnoreCase(sn))&#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;<span class="keyword">catch</span>(NoSuchAlgorithmException e)&#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Android-studio模拟器"><a href="#Android-studio模拟器" class="headerlink" title="Android studio模拟器"></a>Android studio模拟器</h2><p>AMD的cpu不支持<code>Android studio</code>的默认AVD,可以使用 <code>genymotion</code>安卓模拟器</p>
+<ol>
+<li>到<a href="https://www.genymotion.com/" target="_blank" rel="noopener">官网</a>下载安装个人版<code>genymotion</code></li>
+<li>新建一个虚拟机设备</li>
+<li>在AndroidStudio中下载Genymotion插件: genymotion</li>
+<li>点击 View-&gt;toobar ,这样就可以点击genymotion的图标打开</li>
+</ol>
+<h2 id="破解安卓应用程序"><a href="#破解安卓应用程序" class="headerlink" title="破解安卓应用程序"></a>破解安卓应用程序</h2><p>破解Android程序的方法通常是:使用apktool反编译apk文件,生成smali格式的反汇编代码,通过阅读smali文件的代码来理解程序的运行机制,找到突破口,并对代码进行修改;使用Apktool重新编译生成的APK文件并对其进行签名.</p>
+<ul>
+<li><p>下载apktool</p>
+<ul>
+<li><a href="https://ibotpeaches.github.io/Apktool/install/" target="_blank" rel="noopener">https://ibotpeaches.github.io/Apktool/install/</a> </li>
+</ul>
+</li>
+<li><p>分析apk文件</p>
+<p>​        apktool反编译apk文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apktool d ./app.apk -o outdir</span><br></pre></td></tr></table></figure>
+
+
+
+</li>
+</ul>
+<p>  ​        对大部分Android程序来说,错误提示信息是指引我们找到关键代码的明灯.错误提示代码附近通常就是程序的核心验证代码,错误提示属于Android程序中的字符串资源.</p>
+<p>  ​        res/values/strings.xml文件的内容,除了系统默认生成的一系列”abc_”开头的字符串,其他都是程序使用的字符串.</p>
+<p>  <img src="/2019/10/29/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F%5Cstrings.png" alt="Strings.xml"></p>
+<p>  ​        在开发Android程序时,strings.xml中的字符串资源都在R.java文件的String类中标识,每个字符串都有唯一的int类型的索引值,所有的索引值都在与strings.xml同目录下的public.xml文件中.</p>
+<p>  <img src="/2019/10/29/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F%5Cpublic.png" alt="public.xml"></p>
+<p>  ​        利用grep 对反编译目录进行查找,找出关键代码所在位置</p>
+<p>  <img src="/2019/10/29/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F%5Cgrep.png" alt="找出关键代码"></p>
+<ul>
+<li><p>修改smali代码</p>
+<p>分析其smali代码,然后修改其跳转指令 if-nez 改为 if-eqz (if-eqz与if-nez功能相反)</p>
+</li>
+<li><p>重新编译APK文件并签名</p>
+<p><code>apktool b outdir</code></p>
+<p> <a href="https://hbltjdw.github.io/2019/10/28/apk手动签名/" target="_blank" rel="noopener">apk手动签名</a> </p>
+</li>
+</ul>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+  
+
+
+
+
+
+
+    </main>
+
+    <footer class="site-footer">
+  <p class="site-info">
+    Proudly powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and
+    Theme by <a href="https://github.com/CodeDaraW/Hacker" target="_blank">Hacker</a>
+    </br>
+    
+    &copy; 2019 DW Jia
+    
+  </p>
+</footer>
+    
+  </div>
+</div>
+</body>
+</html>
