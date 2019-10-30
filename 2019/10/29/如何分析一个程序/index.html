@@ -86,7 +86,7 @@
     <div class="entry">
       
         <h2 id="编写一个安卓程序"><a href="#编写一个安卓程序" class="headerlink" title="编写一个安卓程序"></a>编写一个安卓程序</h2><p>在 Android studio 中编写一个注册码的应用程序</p>
-<p><img src="/2019/10/29/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F%5Capp.png" alt="app"></p>
+<p><img src="/2019/10/29/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F/app.png" alt="app"></p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line">        setContentView(R.layout.activity_main);</span><br><span class="line">        setTitle(R.string.unregister);</span><br><span class="line">        <span class="keyword">final</span> EditText edit_username = (EditText)findViewById(R.id.editText1);</span><br><span class="line">        <span class="keyword">final</span> EditText edit_sn = (EditText)findViewById(R.id.editText2);</span><br><span class="line">        <span class="keyword">final</span> Button btn_register = (Button)findViewById(R.id.button);</span><br><span class="line">        btn_register.setOnClickListener(<span class="keyword">new</span> View.OnClickListener()&#123;</span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span></span>&#123;</span><br><span class="line">                <span class="keyword">if</span> (!checkSN(edit_username.getText().toString().trim(),edit_sn.getText().toString().trim()))&#123;</span><br><span class="line">                    Toast.makeText(MainActivity.<span class="keyword">this</span>,R.string.unsuccessed,Toast.LENGTH_SHORT).show();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span>&#123;</span><br><span class="line">                    Toast.makeText(MainActivity.<span class="keyword">this</span>,R.string.successed,Toast.LENGTH_SHORT).show();</span><br><span class="line">                    btn_register.setEnabled(<span class="keyword">false</span>);</span><br><span class="line">                    setTitle(R.string.registered);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 
 <p>checkSN用于验证用户名和注册码是否匹配.</p>
@@ -102,9 +102,8 @@
 <h2 id="破解安卓应用程序"><a href="#破解安卓应用程序" class="headerlink" title="破解安卓应用程序"></a>破解安卓应用程序</h2><p>破解Android程序的方法通常是:使用apktool反编译apk文件,生成smali格式的反汇编代码,通过阅读smali文件的代码来理解程序的运行机制,找到突破口,并对代码进行修改;使用Apktool重新编译生成的APK文件并对其进行签名.</p>
 <ul>
 <li><p>下载apktool</p>
-<ul>
-<li><a href="https://ibotpeaches.github.io/Apktool/install/" target="_blank" rel="noopener">https://ibotpeaches.github.io/Apktool/install/</a> </li>
-</ul>
+</li>
+<li><p><a href="https://ibotpeaches.github.io/Apktool/install/" target="_blank" rel="noopener">https://ibotpeaches.github.io/Apktool/install/</a> </p>
 </li>
 <li><p>分析apk文件</p>
 <p>​        apktool反编译apk文件</p>
@@ -116,11 +115,11 @@
 </ul>
 <p>  ​        对大部分Android程序来说,错误提示信息是指引我们找到关键代码的明灯.错误提示代码附近通常就是程序的核心验证代码,错误提示属于Android程序中的字符串资源.</p>
 <p>  ​        res/values/strings.xml文件的内容,除了系统默认生成的一系列”abc_”开头的字符串,其他都是程序使用的字符串.</p>
-<p>  <img src="/2019/10/29/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F%5Cstrings.png" alt="Strings.xml"></p>
+<p>  <img src="/2019/10/29/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F/strings.png" alt="Strings.xml"></p>
 <p>  ​        在开发Android程序时,strings.xml中的字符串资源都在R.java文件的String类中标识,每个字符串都有唯一的int类型的索引值,所有的索引值都在与strings.xml同目录下的public.xml文件中.</p>
-<p>  <img src="/2019/10/29/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F%5Cpublic.png" alt="public.xml"></p>
+<p>  <img src="/2019/10/29/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F/public.png" alt="public.xml"></p>
 <p>  ​        利用grep 对反编译目录进行查找,找出关键代码所在位置</p>
-<p>  <img src="/2019/10/29/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F%5Cgrep.png" alt="找出关键代码"></p>
+<p>  <img src="/2019/10/29/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F/grep.png" alt="找出关键代码"></p>
 <ul>
 <li><p>修改smali代码</p>
 <p>分析其smali代码,然后修改其跳转指令 if-nez 改为 if-eqz (if-eqz与if-nez功能相反)</p>
