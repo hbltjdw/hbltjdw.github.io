@@ -59,6 +59,98 @@
 
   
     
+    <h3 class="article-title"><a href="/2019/10/23/apk打包流程/"><span>apk打包流程</span></a></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2019/10/23/apk打包流程/" rel="bookmark">
+        <time class="entry-date published" datetime="2019-10-22T16:15:54.000Z">
+          2019-10-23
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <h2 id="apk打包流程"><a href="#apk打包流程" class="headerlink" title="apk打包流程"></a>apk打包流程</h2><ol>
+<li>打包资源文件，生成R.java文件 </li>
+<li>处理AIDL文件，生成对应的.java文件</li>
+<li>编译Java文件，生成对应的.class文件 </li>
+<li>把.class文件转化成Davik VM支持的.dex文件 </li>
+<li>打包生成未签名的.apk文件 </li>
+<li>对未签名.apk文件进行签名 </li>
+<li>对签名后的.apk文件进行对齐处理 </li>
+</ol>
+<p><img src="/2019/10/23/apk%E6%89%93%E5%8C%85%E6%B5%81%E7%A8%8B/apk.png" alt="apk打包流程"></p>
+<h2 id="apk打包工具介绍"><a href="#apk打包工具介绍" class="headerlink" title="apk打包工具介绍"></a>apk打包工具介绍</h2><table>
+<thead>
+<tr>
+<th>工具名称</th>
+<th>功能介绍</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>aapt</td>
+<td>Android资源打包工具</td>
+</tr>
+<tr>
+<td>aidl</td>
+<td>Android接口描述语言转化为.java文件的工具</td>
+</tr>
+<tr>
+<td>javac</td>
+<td>Java Compiler,java代码转class文件</td>
+</tr>
+<tr>
+<td>dex</td>
+<td>转化.class文件为Davik VM能识别的.dex文件</td>
+</tr>
+<tr>
+<td>apkbuilder</td>
+<td>生成apk包</td>
+</tr>
+<tr>
+<td>jarsigner</td>
+<td>.jar文件的签名工具</td>
+</tr>
+<tr>
+<td>zipalign</td>
+<td>字节码对齐工具</td>
+</tr>
+</tbody></table>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a href="https://www.jianshu.com/p/a134d00e81ab" target="_blank" rel="noopener">apk打包流程</a></p>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+
+
+  <article>
+
+  
+    
     <h3 class="article-title"><a href="/2019/10/22/apk文件结构/"><span>apk文件结构</span></a></h3>
     
   
