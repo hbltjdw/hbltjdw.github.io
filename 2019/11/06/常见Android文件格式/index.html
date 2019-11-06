@@ -1,0 +1,156 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>常见Android文件格式 | Hexo</title>
+
+  
+  <meta name="author" content="DW Jia">
+  
+
+  
+  <meta name="description" content="库文件　　库文件是一系列代码功能接口与资源数据的有机集合,在开发兼容不同版本系统的apk程序时,需要引入Android SDK中不同版本的android.jar文件.
+jar包　　jar包其实是一个zip格式的文件,里面存放着编译后JAVA代码的class文件的集合.
+　　分析jar包:
+
+静态分析">
+  
+
+  
+  
+  <meta name="keywords" content="">
+  
+
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+  <meta property="og:title" content="常见Android文件格式"/>
+
+  <meta property="og:site_name" content="Hexo"/>
+
+  
+  <meta property="og:image" content="/favicon.ico"/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+</head>
+
+
+<body>
+<div class="blog">
+  <div class="content">
+
+    <header>
+  <div class="site-branding">
+    <h1 class="site-title">
+      <a href="/">Hexo</a>
+    </h1>
+    <p class="site-description"></p>
+  </div>
+  <nav class="site-navigation">
+    <ul>
+      
+        <li><a href="/">主页</a></li>
+      
+        <li><a href="/archives">归档</a></li>
+      
+    </ul>
+  </nav>
+</header>
+
+    <main class="site-main posts-loop">
+    <article>
+
+  
+    
+    <h3 class="article-title"><span>常见Android文件格式</span></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2019/11/06/常见Android文件格式/" rel="bookmark">
+        <time class="entry-date published" datetime="2019-11-06T11:55:08.000Z">
+          2019-11-06
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <h2 id="库文件"><a href="#库文件" class="headerlink" title="库文件"></a>库文件</h2><p>　　库文件是一系列代码功能接口与资源数据的有机集合,在开发兼容不同版本系统的apk程序时,需要引入Android SDK中不同版本的android.jar文件.</p>
+<h3 id="jar包"><a href="#jar包" class="headerlink" title="jar包"></a>jar包</h3><p>　　jar包其实是一个zip格式的文件,里面存放着编译后JAVA代码的class文件的集合.</p>
+<p>　　分析jar包:</p>
+<ol>
+<li><p>静态分析</p>
+<p>　　使用jd-gui这类jar查看工具</p>
+</li>
+<li><p>动态分析</p>
+<p>　　PC平台上可以使用与系统特性相关的工具Dtrace或soot对jar包中的文件进行运行时跟踪</p>
+<p>　　在Android平台中,需要将jar包集成到自己编写的apk中,再对需要分析的jar包中的类与方法进行插桩和运行时分析.</p>
+</li>
+</ol>
+<h3 id="aar包"><a href="#aar包" class="headerlink" title="aar包"></a>aar包</h3><p>　　android studio将aar文件作为全新的库文件格式,aar除了可以包含代码,还可以包含任何在开发中使用的资源数据.</p>
+<p>　　aar目录结构与apk文件类似,<code>class.jar</code>包含aar库文件中所有代码生成后的class文件,<code>res</code>目录存放所有资源,</p>
+<p><code>aidl</code>目录存放了AIDL接口文件,<code>assets</code>目录中存放了Assets资源.<code>jni</code>目录中存放了编译好的不同版本的so库,<code>libs</code>目录中存放了aar包引用的第三方jar包,AndroidManifest.xml文件可用于定义aar包的名称,编译器版本等.</p>
+<p>​        </p>
+<h2 id="classes-dex"><a href="#classes-dex" class="headerlink" title="classes.dex"></a>classes.dex</h2><h3 id="dex文件验证与优化"><a href="#dex文件验证与优化" class="headerlink" title="dex文件验证与优化"></a>dex文件验证与优化</h3><p>　　为了使Android程序在Dalvik虚拟机中快速,顺畅运行,有必要对Dex文件进行验证与优化,Android提供了一个专门验证与优化DEX文件的工具dexopt.</p>
+<h3 id="dex文件修改"><a href="#dex文件修改" class="headerlink" title="dex文件修改"></a>dex文件修改</h3><p>　　使用IDA pro定位代码,然后进行修改,修改之后的dex文件其checksum与signature字段是错误的.需要进行修正.修正方法:</p>
+<ol>
+<li>使用010 Editor编辑器,配合脚本功能Dexfixer.lsc</li>
+<li>dex2jar提供的工具d2j-dex-recompute-checksum</li>
+</ol>
+<h3 id="MultiDex"><a href="#MultiDex" class="headerlink" title="MultiDex"></a>MultiDex</h3><p>　　<code>MultiDex</code>称为dex分包技术.</p>
+<p>　　</p>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+  
+
+
+
+
+
+
+    </main>
+
+    <footer class="site-footer">
+  <p class="site-info">
+    Proudly powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and
+    Theme by <a href="https://github.com/CodeDaraW/Hacker" target="_blank">Hacker</a>
+    </br>
+    
+    &copy; 2019 DW Jia
+    
+  </p>
+</footer>
+    
+  </div>
+</div>
+</body>
+</html>
