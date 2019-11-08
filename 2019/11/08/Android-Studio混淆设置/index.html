@@ -1,0 +1,148 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Android Studio混淆设置 | Hexo</title>
+
+  
+  <meta name="author" content="DW Jia">
+  
+
+  
+  <meta name="description" content="Android studio 使用Proguard进行混淆，其是一个压缩、优化和混淆java字节码文件的一个工具。
+功能：Shrinking(压缩)、Optimization(优化)、Obfuscattion(混淆)、Preverification(预校验)四个操作。优点：
+
+删除项目无用的资源，有">
+  
+
+  
+  
+  <meta name="keywords" content="">
+  
+
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+  <meta property="og:title" content="Android Studio混淆设置"/>
+
+  <meta property="og:site_name" content="Hexo"/>
+
+  
+  <meta property="og:image" content="/favicon.ico"/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+</head>
+
+
+<body>
+<div class="blog">
+  <div class="content">
+
+    <header>
+  <div class="site-branding">
+    <h1 class="site-title">
+      <a href="/">Hexo</a>
+    </h1>
+    <p class="site-description"></p>
+  </div>
+  <nav class="site-navigation">
+    <ul>
+      
+        <li><a href="/">主页</a></li>
+      
+        <li><a href="/archives">归档</a></li>
+      
+    </ul>
+  </nav>
+</header>
+
+    <main class="site-main posts-loop">
+    <article>
+
+  
+    
+    <h3 class="article-title"><span>Android Studio混淆设置</span></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2019/11/08/Android-Studio混淆设置/" rel="bookmark">
+        <time class="entry-date published" datetime="2019-11-08T15:33:37.000Z">
+          2019-11-08
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <p><code>Android studio</code> 使用<code>Proguard</code>进行混淆，其是一个压缩、优化和混淆java字节码文件的一个工具。</p>
+<p>功能：Shrinking(压缩)、Optimization(优化)、Obfuscattion(混淆)、Preverification(预校验)四个操作。<br>优点：</p>
+<ol>
+<li>删除项目无用的资源，有效减小apk大小；</li>
+<li>删除无用的类、类成员、方法和属性，还可以删除无用的注释，最大限度的优化字节码文件；</li>
+<li>使用简短无意义的名称重命名已存在的类、方法、属性等，增加逆向工程的难度。</li>
+</ol>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">buildTypes &#123;</span><br><span class="line">    release &#123;</span><br><span class="line">        // true - 打开混淆</span><br><span class="line">        minifyEnabled true</span><br><span class="line">        // true - 打开资源压缩</span><br><span class="line">        shrinkResources true</span><br><span class="line">        // 用于设置Proguard的规划路径；</span><br><span class="line">        proguardFiles getDefaultProguardFile(&apos;proguard-android.txt&apos;), &apos;proguard-rules.pro&apos;,</span><br><span class="line">                &apos;../libModule/proguard-rules.pro&apos;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>proguard-android.txt：其中proguard-android.txt 是系统默认的混淆文件，具体在../sdk/tools/proguard/ 目录下，其中包含了 android 最基本的混淆，一般不需要改动；</li>
+<li>proguard-rules.pro：是我们需要配置的规则；</li>
+<li>如果要配置多个Module的混淆文件，只需要后面添加逗号跟混淆文件路径；</li>
+</ul>
+<p>在工程目录下，找到 proguard-rules.pro 文件，它就是你要进行编写混淆配置的文件，在这个文件中编写混淆规则</p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a href="https://www.jianshu.com/p/48d6bce58e47" target="_blank" rel="noopener">Android studio 混淆配置</a></p>
+<p><a href="https://www.jianshu.com/p/60e82aafcfd0" target="_blank" rel="noopener">Android Proguard(混淆)</a></p>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+  
+
+
+
+
+
+
+    </main>
+
+    <footer class="site-footer">
+  <p class="site-info">
+    Proudly powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and
+    Theme by <a href="https://github.com/CodeDaraW/Hacker" target="_blank">Hacker</a>
+    </br>
+    
+    &copy; 2019 DW Jia
+    
+  </p>
+</footer>
+    
+  </div>
+</div>
+</body>
+</html>
