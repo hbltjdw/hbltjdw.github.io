@@ -1,0 +1,140 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>动态分析Android程序 | Hexo</title>
+
+  
+  <meta name="author" content="DW Jia">
+  
+
+  
+  <meta name="description" content="在分析经过加密混淆的Android程序时,仅使用静态分析技术往往达不到理想的效果.
+　　动态分析分为动态跟踪和动态调试:
+  　　1. 动态跟踪:侧重于自动化分析  　　2. 动态调试:动态调试需要分析人员参与进来,依靠调试器的能力完成分析工作.
+动态分析框架　　MobSF同时支持Android,i">
+  
+
+  
+  
+  <meta name="keywords" content="">
+  
+
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+  <meta property="og:title" content="动态分析Android程序"/>
+
+  <meta property="og:site_name" content="Hexo"/>
+
+  
+  <meta property="og:image" content="/favicon.ico"/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+</head>
+
+
+<body>
+<div class="blog">
+  <div class="content">
+
+    <header>
+  <div class="site-branding">
+    <h1 class="site-title">
+      <a href="/">Hexo</a>
+    </h1>
+    <p class="site-description"></p>
+  </div>
+  <nav class="site-navigation">
+    <ul>
+      
+        <li><a href="/">主页</a></li>
+      
+        <li><a href="/archives">归档</a></li>
+      
+    </ul>
+  </nav>
+</header>
+
+    <main class="site-main posts-loop">
+    <article>
+
+  
+    
+    <h3 class="article-title"><span>动态分析Android程序</span></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2019/11/12/动态分析Android程序/" rel="bookmark">
+        <time class="entry-date published" datetime="2019-11-12T12:38:21.000Z">
+          2019-11-12
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <p>　　在分析经过加密混淆的Android程序时,仅使用静态分析技术往往达不到理想的效果.</p>
+<p>　　动态分析分为动态跟踪和动态调试:</p>
+<p>  　　1. 动态跟踪:侧重于自动化分析<br>  　　2. 动态调试:动态调试需要分析人员参与进来,依靠调试器的能力完成分析工作.</p>
+<h2 id="动态分析框架"><a href="#动态分析框架" class="headerlink" title="动态分析框架"></a>动态分析框架</h2><p>　　MobSF同时支持Android,iOS,Windows平台上的软件分析,它的测试框架同时支持静态分析,动态分析和webAPI测试.</p>
+<h2 id="动态分析技巧"><a href="#动态分析技巧" class="headerlink" title="动态分析技巧"></a>动态分析技巧</h2><p>　　主流的动态分析框架除了提供了一套完整,通用的动态分析方法,通常还具备高度的可配置特性与可扩展性,但对一些应用来说,还是有一些分析要点没有提供.</p>
+<h3 id="代码注入法"><a href="#代码注入法" class="headerlink" title="代码注入法"></a>代码注入法</h3><p>　　一个程序在发布时通常不会保留Log信息,如果想观察程序特定位置的输出信息,需要手动进行代码注入.代码注入是指先反编译Android程序,然后在反汇编出来的smali文件中添加Log调用代码,最后重新打包程序并运行,查看输出结果. </p>
+<p>　　使用代码注入可以精确输出程序运行时的中间结果,而输出的结果则可以作为程序 分析的风向标.</p>
+<h3 id="栈跟踪法"><a href="#栈跟踪法" class="headerlink" title="栈跟踪法"></a>栈跟踪法</h3><p>　　尽管logcat配合代码注入的方法在分析程序时屡试不爽,但需要分析人员阅读大量的反汇编代码来寻找程序的输出点,且在此过程中需要多次手动注入LOG代码.因此需要一种快速定位程序关键点的方法,栈跟踪法也是属于代码注入的范畴,主要的操作是手动向反汇编后的smali文件中添加用于输出栈跟踪信息的代码.与LOG输出代码不同的是,采用栈跟踪法,只需要知道大概的代码注入点,而且注入后的反馈信息比Log注入要详细的多.栈跟踪信息记录了从程序启动到插入点所有被调用过的方法.</p>
+<h3 id="Method-Profiling"><a href="#Method-Profiling" class="headerlink" title="Method Profiling"></a>Method Profiling</h3><p>　　Windows平台上的OD有一个trace功能,其作用是在程序运行时记录每个被调用的API的名称.Android SDK也提供了类似的调试方法,它就是<code>Method Profiling</code>.</p>
+<h2 id="使用JDB动态调试APK"><a href="#使用JDB动态调试APK" class="headerlink" title="使用JDB动态调试APK"></a>使用JDB动态调试APK</h2><h2 id="使用JEB动态调试APK"><a href="#使用JEB动态调试APK" class="headerlink" title="使用JEB动态调试APK"></a>使用JEB动态调试APK</h2><h2 id="使用IDA-Pro动态调试APK"><a href="#使用IDA-Pro动态调试APK" class="headerlink" title="使用IDA Pro动态调试APK"></a>使用IDA Pro动态调试APK</h2>
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+  
+
+
+
+
+
+
+    </main>
+
+    <footer class="site-footer">
+  <p class="site-info">
+    Proudly powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and
+    Theme by <a href="https://github.com/CodeDaraW/Hacker" target="_blank">Hacker</a>
+    </br>
+    
+    &copy; 2019 DW Jia
+    
+  </p>
+</footer>
+    
+  </div>
+</div>
+</body>
+</html>

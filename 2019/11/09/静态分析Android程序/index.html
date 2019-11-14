@@ -1,0 +1,158 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title> 静态分析Android程序 | Hexo</title>
+
+  
+  <meta name="author" content="DW Jia">
+  
+
+  
+  <meta name="description" content="静态分析简介静态分析Android程序有两种方法:
+
+阅读反汇编生成的Dalvik字节码,可以使用IDA pro分析DEX文件,也可以使用文本编辑器阅读baksmali反编译生成的smali文件
+阅读反汇编生成的Java源码,可以使用dex2jar生成jar文件,然后使用jd-gui阅读jar文件的">
+  
+
+  
+  
+  <meta name="keywords" content="">
+  
+
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+  <meta property="og:title" content=" 静态分析Android程序"/>
+
+  <meta property="og:site_name" content="Hexo"/>
+
+  
+  <meta property="og:image" content="/favicon.ico"/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+</head>
+
+
+<body>
+<div class="blog">
+  <div class="content">
+
+    <header>
+  <div class="site-branding">
+    <h1 class="site-title">
+      <a href="/">Hexo</a>
+    </h1>
+    <p class="site-description"></p>
+  </div>
+  <nav class="site-navigation">
+    <ul>
+      
+        <li><a href="/">主页</a></li>
+      
+        <li><a href="/archives">归档</a></li>
+      
+    </ul>
+  </nav>
+</header>
+
+    <main class="site-main posts-loop">
+    <article>
+
+  
+    
+    <h3 class="article-title"><span> 静态分析Android程序</span></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2019/11/09/静态分析Android程序/" rel="bookmark">
+        <time class="entry-date published" datetime="2019-11-09T14:34:26.000Z">
+          2019-11-09
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <h2 id="静态分析简介"><a href="#静态分析简介" class="headerlink" title="静态分析简介"></a>静态分析简介</h2><p>静态分析Android程序有两种方法:</p>
+<ol>
+<li>阅读反汇编生成的Dalvik字节码,可以使用IDA pro分析DEX文件,也可以使用文本编辑器阅读baksmali反编译生成的smali文件</li>
+<li>阅读反汇编生成的Java源码,可以使用dex2jar生成jar文件,然后使用jd-gui阅读jar文件的代码</li>
+</ol>
+<h2 id="阅读smali代码"><a href="#阅读smali代码" class="headerlink" title="阅读smali代码"></a>阅读smali代码</h2><h2 id="阅读Java代码"><a href="#阅读Java代码" class="headerlink" title="阅读Java代码"></a>阅读Java代码</h2><p>　　在大型APK的逆向分析中,逐行阅读smali代码的效率相对来说比较低.分析阅读高级的Java语言伪代码是提高分析效率的一种常用手段.</p>
+<h3 id="将dex文件转换成jar包"><a href="#将dex文件转换成jar包" class="headerlink" title="将dex文件转换成jar包"></a>将dex文件转换成jar包</h3><ol>
+<li>dex2jar</li>
+<li>enjarify</li>
+</ol>
+<h3 id="jar分析工具"><a href="#jar分析工具" class="headerlink" title="jar分析工具"></a>jar分析工具</h3><ol>
+<li>jd-gui</li>
+<li>jadx       特色是支持直接打开apk或dex文件查看其java伪代码</li>
+<li>bytecode-viewer     提供的插件功能并内置了几款强大的jar反混淆插件</li>
+</ol>
+<h2 id="代码定位技巧"><a href="#代码定位技巧" class="headerlink" title="代码定位技巧"></a>代码定位技巧</h2><ul>
+<li><p>入口分析法</p>
+<p>　　从AndroidManifest.xml中找到主Activity</p>
+</li>
+<li><p>信息反馈法</p>
+<p>　　先运行目标程序,然后将程序运行时给出的反馈信息作为突破口来寻找关键代码</p>
+</li>
+<li><p>特征函数法</p>
+<p>　　寻找特定的API函数</p>
+</li>
+</ul>
+<h2 id="使用JEB进行静态分析"><a href="#使用JEB进行静态分析" class="headerlink" title="使用JEB进行静态分析"></a>使用JEB进行静态分析</h2><p>　　JEB是一款强大的跨平台Android静态分析工具.比起jd-gui等jar查看工具,JEB提供了类似于IDA Pro的方法交叉引用与重命名功能.这些人性化的功能使JEB在Android逆向分析工具中异常突出.此外,JEB的脚本化功能,在自动化分析与对抗代码混淆中非常实用.</p>
+<h2 id="使用IDA-Pro进行静态分析"><a href="#使用IDA-Pro进行静态分析" class="headerlink" title="使用IDA Pro进行静态分析"></a>使用IDA Pro进行静态分析</h2><h2 id="使用Androguard进行静态分析"><a href="#使用Androguard进行静态分析" class="headerlink" title="使用Androguard进行静态分析"></a>使用Androguard进行静态分析</h2>
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+  
+
+
+
+
+
+
+    </main>
+
+    <footer class="site-footer">
+  <p class="site-info">
+    Proudly powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and
+    Theme by <a href="https://github.com/CodeDaraW/Hacker" target="_blank">Hacker</a>
+    </br>
+    
+    &copy; 2019 DW Jia
+    
+  </p>
+</footer>
+    
+  </div>
+</div>
+</body>
+</html>

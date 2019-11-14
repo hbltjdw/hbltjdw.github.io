@@ -59,6 +59,132 @@
 
   
     
+    <h3 class="article-title"><a href="/2019/11/12/动态分析Android程序/"><span>动态分析Android程序</span></a></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2019/11/12/动态分析Android程序/" rel="bookmark">
+        <time class="entry-date published" datetime="2019-11-12T12:38:21.000Z">
+          2019-11-12
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <p>　　在分析经过加密混淆的Android程序时,仅使用静态分析技术往往达不到理想的效果.</p>
+<p>　　动态分析分为动态跟踪和动态调试:</p>
+<p>  　　1. 动态跟踪:侧重于自动化分析<br>  　　2. 动态调试:动态调试需要分析人员参与进来,依靠调试器的能力完成分析工作.</p>
+<h2 id="动态分析框架"><a href="#动态分析框架" class="headerlink" title="动态分析框架"></a>动态分析框架</h2><p>　　MobSF同时支持Android,iOS,Windows平台上的软件分析,它的测试框架同时支持静态分析,动态分析和webAPI测试.</p>
+<h2 id="动态分析技巧"><a href="#动态分析技巧" class="headerlink" title="动态分析技巧"></a>动态分析技巧</h2><p>　　主流的动态分析框架除了提供了一套完整,通用的动态分析方法,通常还具备高度的可配置特性与可扩展性,但对一些应用来说,还是有一些分析要点没有提供.</p>
+<h3 id="代码注入法"><a href="#代码注入法" class="headerlink" title="代码注入法"></a>代码注入法</h3><p>　　一个程序在发布时通常不会保留Log信息,如果想观察程序特定位置的输出信息,需要手动进行代码注入.代码注入是指先反编译Android程序,然后在反汇编出来的smali文件中添加Log调用代码,最后重新打包程序并运行,查看输出结果. </p>
+<p>　　使用代码注入可以精确输出程序运行时的中间结果,而输出的结果则可以作为程序 分析的风向标.</p>
+<h3 id="栈跟踪法"><a href="#栈跟踪法" class="headerlink" title="栈跟踪法"></a>栈跟踪法</h3><p>　　尽管logcat配合代码注入的方法在分析程序时屡试不爽,但需要分析人员阅读大量的反汇编代码来寻找程序的输出点,且在此过程中需要多次手动注入LOG代码.因此需要一种快速定位程序关键点的方法,栈跟踪法也是属于代码注入的范畴,主要的操作是手动向反汇编后的smali文件中添加用于输出栈跟踪信息的代码.与LOG输出代码不同的是,采用栈跟踪法,只需要知道大概的代码注入点,而且注入后的反馈信息比Log注入要详细的多.栈跟踪信息记录了从程序启动到插入点所有被调用过的方法.</p>
+<h3 id="Method-Profiling"><a href="#Method-Profiling" class="headerlink" title="Method Profiling"></a>Method Profiling</h3><p>　　Windows平台上的OD有一个trace功能,其作用是在程序运行时记录每个被调用的API的名称.Android SDK也提供了类似的调试方法,它就是<code>Method Profiling</code>.</p>
+<h2 id="使用JDB动态调试APK"><a href="#使用JDB动态调试APK" class="headerlink" title="使用JDB动态调试APK"></a>使用JDB动态调试APK</h2><h2 id="使用JEB动态调试APK"><a href="#使用JEB动态调试APK" class="headerlink" title="使用JEB动态调试APK"></a>使用JEB动态调试APK</h2><h2 id="使用IDA-Pro动态调试APK"><a href="#使用IDA-Pro动态调试APK" class="headerlink" title="使用IDA Pro动态调试APK"></a>使用IDA Pro动态调试APK</h2>
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+
+
+  <article>
+
+  
+    
+    <h3 class="article-title"><a href="/2019/11/09/静态分析Android程序/"><span> 静态分析Android程序</span></a></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2019/11/09/静态分析Android程序/" rel="bookmark">
+        <time class="entry-date published" datetime="2019-11-09T14:34:26.000Z">
+          2019-11-09
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <h2 id="静态分析简介"><a href="#静态分析简介" class="headerlink" title="静态分析简介"></a>静态分析简介</h2><p>静态分析Android程序有两种方法:</p>
+<ol>
+<li>阅读反汇编生成的Dalvik字节码,可以使用IDA pro分析DEX文件,也可以使用文本编辑器阅读baksmali反编译生成的smali文件</li>
+<li>阅读反汇编生成的Java源码,可以使用dex2jar生成jar文件,然后使用jd-gui阅读jar文件的代码</li>
+</ol>
+<h2 id="阅读smali代码"><a href="#阅读smali代码" class="headerlink" title="阅读smali代码"></a>阅读smali代码</h2><h2 id="阅读Java代码"><a href="#阅读Java代码" class="headerlink" title="阅读Java代码"></a>阅读Java代码</h2><p>　　在大型APK的逆向分析中,逐行阅读smali代码的效率相对来说比较低.分析阅读高级的Java语言伪代码是提高分析效率的一种常用手段.</p>
+<h3 id="将dex文件转换成jar包"><a href="#将dex文件转换成jar包" class="headerlink" title="将dex文件转换成jar包"></a>将dex文件转换成jar包</h3><ol>
+<li>dex2jar</li>
+<li>enjarify</li>
+</ol>
+<h3 id="jar分析工具"><a href="#jar分析工具" class="headerlink" title="jar分析工具"></a>jar分析工具</h3><ol>
+<li>jd-gui</li>
+<li>jadx       特色是支持直接打开apk或dex文件查看其java伪代码</li>
+<li>bytecode-viewer     提供的插件功能并内置了几款强大的jar反混淆插件</li>
+</ol>
+<h2 id="代码定位技巧"><a href="#代码定位技巧" class="headerlink" title="代码定位技巧"></a>代码定位技巧</h2><ul>
+<li><p>入口分析法</p>
+<p>　　从AndroidManifest.xml中找到主Activity</p>
+</li>
+<li><p>信息反馈法</p>
+<p>　　先运行目标程序,然后将程序运行时给出的反馈信息作为突破口来寻找关键代码</p>
+</li>
+<li><p>特征函数法</p>
+<p>　　寻找特定的API函数</p>
+</li>
+</ul>
+<h2 id="使用JEB进行静态分析"><a href="#使用JEB进行静态分析" class="headerlink" title="使用JEB进行静态分析"></a>使用JEB进行静态分析</h2><p>　　JEB是一款强大的跨平台Android静态分析工具.比起jd-gui等jar查看工具,JEB提供了类似于IDA Pro的方法交叉引用与重命名功能.这些人性化的功能使JEB在Android逆向分析工具中异常突出.此外,JEB的脚本化功能,在自动化分析与对抗代码混淆中非常实用.</p>
+<h2 id="使用IDA-Pro进行静态分析"><a href="#使用IDA-Pro进行静态分析" class="headerlink" title="使用IDA Pro进行静态分析"></a>使用IDA Pro进行静态分析</h2><h2 id="使用Androguard进行静态分析"><a href="#使用Androguard进行静态分析" class="headerlink" title="使用Androguard进行静态分析"></a>使用Androguard进行静态分析</h2>
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+
+
+  <article>
+
+  
+    
     <h3 class="article-title"><a href="/2019/11/08/Android-Studio混淆设置/"><span>Android Studio混淆设置</span></a></h3>
     
   
@@ -601,129 +727,6 @@
 <p>##　参考文章</p>
 <p><a href="https://www.jianshu.com/p/e1e2fd05bb62" target="_blank" rel="noopener">Android开发之通过apksigner对apk进行v2签名</a></p>
 <p><a href="https://www.jianshu.com/p/db8751060146" target="_blank" rel="noopener">V1 和 V2 签名工具</a></p>
-
-      
-    </div>
-
-  </div>
-
-  <div class="article-footer">
-    <div class="article-meta pull-left">
-
-    
-
-    
-
-    </div>
-
-    
-  </div>
-</article>
-
-
-
-  <article>
-
-  
-    
-    <h3 class="article-title"><a href="/2019/10/25/Smali语法学习/"><span>Smali语法学习</span></a></h3>
-    
-  
-
-  <div class="article-top-meta">
-    <span class="posted-on">
-      <a href="/2019/10/25/Smali语法学习/" rel="bookmark">
-        <time class="entry-date published" datetime="2019-10-25T13:26:36.000Z">
-          2019-10-25
-        </time>
-      </a>
-    </span>
-  </div>
-
-
-  
-
-  <div class="article-content">
-    <div class="entry">
-      
-        <ul>
-<li><p>Smali 简介</p>
-<p>​        <code>Dalvik虚拟机</code>是google专门为<code>Android</code>平台设计的一款虚拟机,区别于标准 Java 虚拟机 JVM 的 class 文件格式，<code>Dalvik VM</code> 拥有专属的 DEX 可执行文件格式和指令集代码。<code>smali</code> 和 <code>baksmali</code> 是针对 DEX 执行文件格式的汇编器和反汇编器，反汇编后 DEX 文件会产生<code>.smali</code> 后缀的代码文件.<code>smali</code>代码拥有特定的格式与语法，<code>smali</code>语言是对 <code>Dalvik</code> 虚拟机字节码的一种解释。</p>
-<p>​        虽然主流的 DEX 可执行文件反汇编工具不少，如 <code>Dedexer</code>、<code>IDA Pro</code> 和 <code>dex2jar+jd-gui</code>，但 <code>Smali</code>提供反汇编功能的同时，也提供了打包反汇编代码重新生成DEX的功能，因此 <code>Smali</code>被广泛地用于 APP 广告注入、汉化和破解，ROM 定制等方面。</p>
-<p>​        简单来说就是用java写的代码编译成class打包成<code>dex</code>文件后使用<code>baksmali</code>程序逆向回来的一种语法。</p>
-</li>
-<li><p>Smali 学习</p>
-<p>​        在<code>Android studio</code>中查找插件<code>java2smali</code>然后就可以把任何JAVA代码转换成<code>smali</code>进行学习.</p>
-<p>​        然后可以对照着java代码来逐行分析这个<code>smali</code>文件。注意.line关键字就是用来描述当前代码在java源文件中的行数。然后你可以通过对照两组代码的方法进行反推。这样就可以很轻松的学会看<code>smali</code>文件。</p>
-</li>
-<li><p>参考文章</p>
-<p><a href="https://blog.csdn.net/Kelaker/article/details/84403369" target="_blank" rel="noopener">Smali语法</a></p>
-<p><a href="https://www.jianshu.com/p/1a2e2da93b72" target="_blank" rel="noopener">Smali 语法解析——Hello World</a></p>
-<p><a href="https://github.com/JesusFreke/smali" target="_blank" rel="noopener">github Smali</a></p>
-<p><a href="https://source.android.google.cn/devices/tech/dalvik/dalvik-bytecode" target="_blank" rel="noopener">Dalvik 字节码</a></p>
-</li>
-</ul>
-
-      
-    </div>
-
-  </div>
-
-  <div class="article-footer">
-    <div class="article-meta pull-left">
-
-    
-
-    
-
-    </div>
-
-    
-  </div>
-</article>
-
-
-
-  <article>
-
-  
-    
-    <h3 class="article-title"><a href="/2019/10/24/常见逆向分析工具/"><span>常见逆向分析工具</span></a></h3>
-    
-  
-
-  <div class="article-top-meta">
-    <span class="posted-on">
-      <a href="/2019/10/24/常见逆向分析工具/" rel="bookmark">
-        <time class="entry-date published" datetime="2019-10-24T12:17:34.000Z">
-          2019-10-24
-        </time>
-      </a>
-    </span>
-  </div>
-
-
-  
-
-  <div class="article-content">
-    <div class="entry">
-      
-        <ul>
-<li><code>ApkTool</code> </li>
-</ul>
-<p>​        Android逆向分析工具,提供了APK的反编译与回编译的功能,让APK重打包成为可能,以命令行操作的Apktool使用起来更加简单便捷.</p>
-<ul>
-<li><code>smali/baksmali</code></li>
-</ul>
-<p>​        DEX文件的反编译与回编译工具.提供了smali语法格式,使DEX文件的修改可以基于smali的汇编指令完成.Apktool底层就是使用它提供的dexlib库来生成smali反汇编文件.</p>
-<ul>
-<li><code>dex2jar</code></li>
-</ul>
-<p>​        将dex文件转换为jar包的工具,转换后的jar包可以利用<code>jd-gui</code>等工具查看java代码</p>
-<ul>
-<li><code>010Editor</code></li>
-</ul>
-<p>​        跨平台的二进制编辑器.可以使用文件格式模板对二进制文件进行查看和编辑.</p>
 
       
     </div>
