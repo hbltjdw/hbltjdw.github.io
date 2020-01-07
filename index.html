@@ -59,6 +59,283 @@
 
   
     
+    <h3 class="article-title"><a href="/2020/01/07/dex加载流程/"><span>dex加载流程</span></a></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2020/01/07/dex加载流程/" rel="bookmark">
+        <time class="entry-date published" datetime="2020-01-07T10:04:07.000Z">
+          2020-01-07
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <h2 id="ClassLoader"><a href="#ClassLoader" class="headerlink" title="ClassLoader"></a>ClassLoader</h2><h3 id="Java中的ClassLoader"><a href="#Java中的ClassLoader" class="headerlink" title="Java中的ClassLoader"></a>Java中的ClassLoader</h3><p><code>Bootstrap ClassLoader</code>： 根ClassLoader，用C++实现，专门用来加载Java的核心API：$JAVA_HOME中jre/lib/rt.jar中所有class文件rt的意思是runtime</p>
+<p><code>Extension ClassLoade</code>r： 加载Java扩展API jre/lib/ext中的类</p>
+<p><code>App ClassLoader</code>： 加载classpath目录下定义的class，也就是应用程序用到的ClassLoader。加载当前应用程序ClassPath下面的所有的jar和Class文件。</p>
+<p><code>Custom ClassLoader</code>： 可以自定义的ClassLoader，可以继承这个ClassLoader然后自己实现。</p>
+<h3 id="Android中的ClassLoader"><a href="#Android中的ClassLoader" class="headerlink" title="Android中的ClassLoader"></a>Android中的<code>ClassLoader</code></h3><p><code>BootClassLoader</code>:主要用来加载<code>FrameWork</code>层的class文件</p>
+<p><code>PathClassLoader</code>:继承自<code>BaseDexClassLoader</code>，用来加载已经安装到系统中的apk中的class文件，</p>
+<p><code>DexClassLoader</code>:继承自<code>BaseDexClassLoader</code>，用来加载指定的目录中的class文件</p>
+<p>下面看一下 <code>ClassLoader</code>的源码，最重要的是<code>loadClass</code> 方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> Class&lt;?&gt; loadClass(String name, <span class="keyword">boolean</span> resolve)</span><br><span class="line">    <span class="keyword">throws</span> ClassNotFoundException</span><br><span class="line">&#123;</span><br><span class="line">        <span class="comment">// 第一步</span></span><br><span class="line">        Class&lt;?&gt; c = findLoadedClass(name);</span><br><span class="line">        <span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 第二步</span></span><br><span class="line">                <span class="keyword">if</span> (parent != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    c = parent.loadClass(name, <span class="keyword">false</span>);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    c = findBootstrapClassOrNull(name);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">                <span class="comment">// ClassNotFoundException thrown if class not found</span></span><br><span class="line">                <span class="comment">// from the non-null parent class loader</span></span><br><span class="line">            &#125;</span><br><span class="line">           <span class="comment">//第三步</span></span><br><span class="line">            <span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="comment">// If still not found, then invoke findClass in order</span></span><br><span class="line">                <span class="comment">// to find the class.</span></span><br><span class="line">                c = findClass(name);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> c;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>findLoadedClass(name)检查这个类是否被加载过，最终执行到native方法去查找 </li>
+<li>如果没有并且其父类不为空，执行父类的loadClass()方法 </li>
+<li>如果最终还是没有找到，就执行findClass(name)方法自己去加载这个类。</li>
+</ol>
+<p>在 <code>BaseDexClassLoader</code>中查看findClass()方法的实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseDexClassLoader</span> <span class="keyword">extends</span> <span class="title">ClassLoader</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">   ......</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> Class&lt;?&gt; findClass(String name) <span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">        List&lt;Throwable&gt; suppressedExceptions = <span class="keyword">new</span> ArrayList&lt;Throwable&gt;();</span><br><span class="line">        Class c = pathList.findClass(name, suppressedExceptions);</span><br><span class="line">        <span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">            ClassNotFoundException cnfe = <span class="keyword">new</span> ClassNotFoundException(</span><br><span class="line">                    <span class="string">"Didn't find class \""</span> + name + <span class="string">"\" on path: "</span> + pathList);</span><br><span class="line">            <span class="keyword">for</span> (Throwable t : suppressedExceptions) &#123;</span><br><span class="line">                cnfe.addSuppressed(t);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">throw</span> cnfe;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> c;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"> ......</span><br></pre></td></tr></table></figure>
+
+<p>可以看到这里调用了<code>pathList.findClass()</code>，<code>pathList</code>是<code>BaseDexClassLoader</code>的一个成员变量<code>DexPathList</code></p>
+<p>继续查看<code>pathList.findClass()</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Class&lt;?&gt; findClass(String name, List&lt;Throwable&gt; suppressed) &#123;</span><br><span class="line">       <span class="keyword">for</span> (Element element : dexElements) &#123;</span><br><span class="line">           Class&lt;?&gt; clazz = element.findClass(name, definingContext, suppressed);</span><br><span class="line">           <span class="keyword">if</span> (clazz != <span class="keyword">null</span>) &#123;</span><br><span class="line">               <span class="keyword">return</span> clazz;</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">if</span> (dexElementsSuppressedExceptions != <span class="keyword">null</span>) &#123;</span><br><span class="line">           suppressed.addAll(Arrays.asList(dexElementsSuppressedExceptions));</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>遍历<code>dexElements[]</code>,在每一个element对象中继续调用findclass(),返回第一个不为null的值.</p>
+<p>这个Element数组是<code>DexPathList</code>初始化 的时候被创建</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">DexPathList</span><span class="params">(ClassLoader definingContext, ByteBuffer[] dexFiles)</span> </span>&#123;</span><br><span class="line">     <span class="keyword">if</span> (definingContext == <span class="keyword">null</span>) &#123;</span><br><span class="line">         <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException(<span class="string">"definingContext == null"</span>);</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">if</span> (dexFiles == <span class="keyword">null</span>) &#123;</span><br><span class="line">         <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException(<span class="string">"dexFiles == null"</span>);</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">if</span> (Arrays.stream(dexFiles).anyMatch(v -&gt; v == <span class="keyword">null</span>)) &#123;</span><br><span class="line">         <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException(<span class="string">"dexFiles contains a null Buffer!"</span>);</span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">this</span>.definingContext = definingContext;</span><br><span class="line">      <span class="comment">// TODO It might be useful to let in-memory dex-paths have native libraries.</span></span><br><span class="line">      <span class="keyword">this</span>.nativeLibraryDirectories = Collections.emptyList();</span><br><span class="line">      <span class="keyword">this</span>.systemNativeLibraryDirectories =</span><br><span class="line">              splitPaths(System.getProperty(<span class="string">"java.library.path"</span>), <span class="keyword">true</span>);</span><br><span class="line">      <span class="keyword">this</span>.nativeLibraryPathElements = makePathElements(<span class="keyword">this</span>.systemNativeLibraryDirectories);</span><br><span class="line"></span><br><span class="line">      ArrayList&lt;IOException&gt; suppressedExceptions = <span class="keyword">new</span> ArrayList&lt;IOException&gt;();</span><br><span class="line">      <span class="keyword">this</span>.dexElements = makeInMemoryDexElements(dexFiles, suppressedExceptions);</span><br><span class="line">      <span class="keyword">if</span> (suppressedExceptions.size() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">          <span class="keyword">this</span>.dexElementsSuppressedExceptions =</span><br><span class="line">                  suppressedExceptions.toArray(<span class="keyword">new</span> IOException[suppressedExceptions.size()]);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          dexElementsSuppressedExceptions = <span class="keyword">null</span>;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到<code>this.dexElements = makeInMemoryDexElements(dexFiles, suppressedExceptions);</code>利用函数<code>makeInMemoryDexElements</code>来创建<code>dexElements[]</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> Element[] makeInMemoryDexElements(ByteBuffer[] dexFiles,</span><br><span class="line">        List&lt;IOException&gt; suppressedExceptions) &#123;</span><br><span class="line">    Element[] elements = <span class="keyword">new</span> Element[dexFiles.length];</span><br><span class="line">    <span class="keyword">int</span> elementPos = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (ByteBuffer buf : dexFiles) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            DexFile dex = <span class="keyword">new</span> DexFile(buf);</span><br><span class="line">            elements[elementPos++] = <span class="keyword">new</span> Element(dex);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException suppressed) &#123;</span><br><span class="line">            System.logE(<span class="string">"Unable to load dex file: "</span> + buf, suppressed);</span><br><span class="line">            suppressedExceptions.add(suppressed);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (elementPos != elements.length) &#123;</span><br><span class="line">        elements = Arrays.copyOf(elements, elementPos);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> elements;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>遍历传入的参数<code>dexFiles</code>,对每一个<code>dexFiles</code>创建<code>DexFile</code>对象,并根据<code>DexFile</code>创建<code>Element</code>对象,加入到<code>elements[]</code>数组中,返回<code>elements[]</code>数组.</p>
+<h2 id="获取A3AEECD8-dex的elements"><a href="#获取A3AEECD8-dex的elements" class="headerlink" title="获取A3AEECD8.dex的elements[]"></a>获取A3AEECD8.dex的elements[]</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Globals::absoluteEncryptJar_ = /data/user/<span class="number">0</span>/com.example.msa_sdk/<span class="number">.00000000000</span>/A3AEECD8.dex</span><br><span class="line"></span><br><span class="line">v3 = __GetPathList(Globals::env_, Globals::classLoader_);</span><br><span class="line">v4 = NewStringUTF(Globals::env_, Globals::absoluteEncryptJar_);               </span><br><span class="line">v5 = NewStringUTF(Globals::env_, <span class="string">"makeInMemoryDexElements"</span>);</span><br><span class="line">v6 = CallMakeInMemoryDexElements(Globals::env_, v3, v4, v5);</span><br></pre></td></tr></table></figure>
+
+<p><code>CallMakeInMemoryDexElements</code>实际上是执行了<code>&quot;com/bun/miitmdid/core/Jlibrary&quot;</code>中的<code>&quot;o0o0o0o0o0&quot;</code>方法,并传递四个参数分别为</p>
+<ol>
+<li><code>Ldalvik/system/DexPathList</code> </li>
+<li><code>Globals::absoluteEncryptJar_</code></li>
+<li><code>&quot;makeInMemoryDexElements&quot;</code></li>
+<li>0</li>
+</ol>
+<p><code>o0o0o0o0o0</code>执行了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">makeInMemoryDexElements(dexFiles, suppressedExceptions);</span><br></pre></td></tr></table></figure>
+
+<p>其中<code>dexFiles</code> 为 <code>&quot;/data/user/0/com.example.msa_sdk/.00000000000/A3AEECD8.dex&quot;</code></p>
+<p>查看<code>makeInMemoryDexElements</code>源码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> Element[] makeInMemoryDexElements(ByteBuffer[] dexFiles,</span><br><span class="line">        List&lt;IOException&gt; suppressedExceptions) &#123;</span><br><span class="line">    Element[] elements = <span class="keyword">new</span> Element[dexFiles.length];</span><br><span class="line">    <span class="keyword">int</span> elementPos = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (ByteBuffer buf : dexFiles) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            DexFile dex = <span class="keyword">new</span> DexFile(buf);</span><br><span class="line">            elements[elementPos++] = <span class="keyword">new</span> Element(dex);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException suppressed) &#123;</span><br><span class="line">            System.logE(<span class="string">"Unable to load dex file: "</span> + buf, suppressed);</span><br><span class="line">            suppressedExceptions.add(suppressed);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (elementPos != elements.length) &#123;</span><br><span class="line">        elements = Arrays.copyOf(elements, elementPos);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> elements;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p> 遍历<code>dexFile</code>,依次创建<code>DexFile</code>和<code>Element</code>，然后放到数组中返回。 </p>
+<p>数组Elements[] 数组中装有dex文件</p>
+<p>因此v6 为 <code>/data/user/0/com.example.msa_sdk/.00000000000/A3AEECD8.dex</code> 的elements</p>
+<h2 id="获取当前classloader的Elements"><a href="#获取当前classloader的Elements" class="headerlink" title="获取当前classloader的Elements[]"></a>获取当前classloader的Elements[]</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">v8 = __GetElementArray(Globals::env_, Globals::classLoader_);</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">__int64 __fastcall __GetElementArray(__int64 a1, __int64 a2)                        <span class="comment">//__GetElementArray(Globals::env_, Globals::classLoader_);</span></span><br><span class="line">&#123;</span><br><span class="line">  __int64 v2; <span class="comment">// x21</span></span><br><span class="line">  __int64 v3; <span class="comment">// x19</span></span><br><span class="line">  __int64 v4; <span class="comment">// x0</span></span><br><span class="line">  __int64 v5; <span class="comment">// x20</span></span><br><span class="line">  __int64 v6; <span class="comment">// x0</span></span><br><span class="line">  __int64 v7; <span class="comment">// x21</span></span><br><span class="line">  __int64 v8; <span class="comment">// x0</span></span><br><span class="line">  __int64 v9; <span class="comment">// x22</span></span><br><span class="line">  __int64 v10; <span class="comment">// x0</span></span><br><span class="line">  __int64 v11; <span class="comment">// x23</span></span><br><span class="line"></span><br><span class="line">  v2 = a2;                                                      <span class="comment">//Globals::classLoader_</span></span><br><span class="line">  v3 = a1;                                                      <span class="comment">//Globals::env_</span></span><br><span class="line">  v4 = FindClass(Globals::env_,<span class="string">"dalvik/system/BaseDexClassLoader"</span>);</span><br><span class="line">  v5 = v4;</span><br><span class="line">  v6 = GetFieldID(Globals::env_,v4,<span class="string">"pathList"</span>,<span class="string">"Ldalvik/system/DexPathList;"</span>);</span><br><span class="line">  v7 = GetObjectField(Globals::env_, Globals::classLoader_, v6);</span><br><span class="line">  v8 = FindClass(Globals::env_, <span class="string">"dalvik/system/DexPathList"</span>);</span><br><span class="line">  v9 = v8; </span><br><span class="line">  v10 = GetFieldID(Globals::env_,v8,<span class="string">"dexElements"</span>,<span class="string">"[Ldalvik/system/DexPathList$Element;"</span>);</span><br><span class="line">  v11 = GetObjectField(Globals::env_, v7, v10);</span><br><span class="line">  <span class="keyword">if</span> ( v9 )</span><br><span class="line">    DeleteLocalRef(v3, v9);</span><br><span class="line">  <span class="keyword">if</span> ( v7 )</span><br><span class="line">    DeleteLocalRef(v3, v7);</span><br><span class="line">  <span class="keyword">if</span> ( v5 )</span><br><span class="line">    DeleteLocalRef(v3, v5);</span><br><span class="line">  <span class="keyword">return</span> v11;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中,v7为<code>dalvik/system/BaseDexClassLoader</code>中的成员变量<code>pathList</code>的值.</p>
+<p>返回值v11为<code>dalvik/system/DexPathList</code>中的成员变量<code>dexElements[]</code>的值.</p>
+<p>因此v8为<code>dalvik/system/DexPathList</code>中的成员变量<code>dexElements[]</code>的值</p>
+<p>即v8为 <code>com.bun.miitmdid.core.classLoader</code>中的<code>pathList</code>中的<code>dexElements[]</code></p>
+<h2 id="合并A3AEECD8-dex和classloader的Elements-并重新赋值"><a href="#合并A3AEECD8-dex和classloader的Elements-并重新赋值" class="headerlink" title="合并A3AEECD8.dex和classloader的Elements[] 并重新赋值"></a>合并A3AEECD8.dex和classloader的Elements[] 并重新赋值</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">  v6 为 /data/user/<span class="number">0</span>/com.example.msa_sdk/<span class="number">.00000000000</span>/A3AEECD8.dex 的elements</span><br><span class="line">  v8为 com.bun.miitmdid.core.classLoader 中的pathList中的dexElements[]</span><br><span class="line">  v9 = GetArrayLength(Globals::env_, v8);                                                </span><br><span class="line">  v10 = GetArrayLength(Globals::env_, v6);</span><br><span class="line">  v11 = __NewArray(Globals::env_, <span class="string">"dalvik/system/DexPathList$Element"</span>, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)(v9 + v10)); </span><br><span class="line"><span class="comment">// 两个if为新建一个Elements[]值为合并之后的v6和v8</span></span><br><span class="line">  <span class="keyword">if</span> ( v10 &gt; <span class="number">0</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">do</span></span><br><span class="line">    &#123;</span><br><span class="line">      v12 = GetObjectArrayElement(Globals::env_, v6, v7);             </span><br><span class="line">      v13 = v7++;                                                     </span><br><span class="line">      SetObjectArrayElement(Globals::env_, v11, v13, v12);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> ( v7 != v10 );</span><br><span class="line">  &#125;</span><br><span class="line">  v14 = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">if</span> ( v9 &gt; <span class="number">0</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">do</span></span><br><span class="line">    &#123;</span><br><span class="line">      v15 = GetObjectArrayElement(Globals::env_, v8, v14);              </span><br><span class="line">      v16 = v10 + v14++;                                               </span><br><span class="line">      SetObjectArrayElement(Globals::env_, v11, v16, v15);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> ( v14 != v9 );</span><br><span class="line">  &#125;</span><br><span class="line">  _SetElementsToLoader(Globals::env_, Globals::classLoader_, v11);</span><br></pre></td></tr></table></figure>
+
+<h3 id="SetElementsToLoader"><a href="#SetElementsToLoader" class="headerlink" title="_SetElementsToLoader"></a>_<code>SetElementsToLoader</code></h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">__int64 __fastcall __SetElementsToLoader(__int64 a1, __int64 a2, __int64 a3)      <span class="comment">//Globals::env_ ,Globals::classLoader_ ,v6+v8</span></span><br><span class="line">&#123;</span><br><span class="line">  v3 = a3;</span><br><span class="line">  v4 = a1;</span><br><span class="line">  v5 = FindClass(Globals::env_,<span class="string">"dalvik/system/BaseDexClassLoader"</span>);</span><br><span class="line">  v6 = v5;</span><br><span class="line">  v7 = GetFieldID(Globals::env_,v5,<span class="string">"pathList"</span>,<span class="string">"Ldalvik/system/DexPathList;"</span>);</span><br><span class="line">  v8 = GetObjectField(Globals::env_, Globals::classLoader_, v7);</span><br><span class="line">  v9 = FindClass(Globals::env_, <span class="string">"dalvik/system/DexPathList"</span>);</span><br><span class="line">  v10 = v9;</span><br><span class="line">  v11 = GetFieldID(Globals::env_,v9,<span class="string">"dexElements"</span>,<span class="string">"[Ldalvik/system/DexPathList$Element;"</span>);</span><br><span class="line">  result = SetObjectField(Globals::env_, v8, v11, v3);</span><br><span class="line">  <span class="keyword">if</span> ( v10 )</span><br><span class="line">    result = DeleteLocalRef(v4, v10);</span><br><span class="line">  <span class="keyword">if</span> ( v8 )</span><br><span class="line">    result = DeleteLocalRef(v4, v8);</span><br><span class="line">  <span class="keyword">if</span> ( v6 )</span><br><span class="line">    result = DeleteLocalRef(v4, v6);</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>SetObjectField</code>即将<code>classloader</code>中的<code>pathList</code>成员变量中的成员变量<code>dexElements</code>设置为v6+v8</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>　　 一个<code>ClassLoader</code>可以包含多个dex文件，每个dex文件是一个<code>Element</code>，多个dex文件排列成一个有序的数组<code>dexElements</code>数组，当找类的时候，会按顺序遍历dex文件，然后从当前遍历的dex文件中找类，如果找类则返回，如果找不到从下一个dex文件继续查找 .</p>
+<p>　　通过反射获取<code>DexClassLoader</code>中的<code>DexPathList</code>中的Element数组,调用<code>MakeInMemoryDexElements</code>函数来生成<code>A3AEECD8.dex</code>的<code>Element</code>对象,然后将<code>A3AEECD8.dex</code>的<code>Element</code>对象合并进入<code>classloader</code>中的<code>Element[]</code>.</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p><a href="https://blog.csdn.net/mingyunxiaohai/article/details/86677509" target="_blank" rel="noopener">ClassLoader</a></p>
+<p><a href="https://www.androidos.net.cn/android/9.0.0_r8/xref/libcore/dalvik/src/main/java/dalvik/system/DexPathList.java" target="_blank" rel="noopener">Dexpathlist.java</a></p>
+<p><a href="https://blog.csdn.net/hp910315/article/details/51681710" target="_blank" rel="noopener">MultiDex与热修复实现原理</a></p>
+<p><a href="https://www.jianshu.com/p/c8cd452f5eed" target="_blank" rel="noopener">Dex热修复原理</a></p>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+
+
+  <article>
+
+  
+    
+    <h3 class="article-title"><a href="/2020/01/07/sdk/"><span>sdk</span></a></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2020/01/07/sdk/" rel="bookmark">
+        <time class="entry-date published" datetime="2020-01-07T10:02:36.000Z">
+          2020-01-07
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <h2 id="小米-1-case-1"><a href="#小米-1-case-1" class="headerlink" title="小米 1                      case 1"></a>小米 1                      case 1</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Class b = Class.forName(<span class="string">"com.android.id.impl.IdProviderImpl"</span>);</span><br><span class="line">Object a = b.newInstance();</span><br><span class="line">Method method_AAID = b.getMethod(<span class="string">"getAAID"</span>, Context.class);</span><br><span class="line">Method method_OAID = b.getMethod(<span class="string">"getOAID"</span>, Context.class);</span><br><span class="line">Method method_VAID = b.getMethod(<span class="string">"getVAID"</span>, Context.class);</span><br><span class="line">Object str_AAID = method_AAID.invoke(a,<span class="keyword">this</span>);</span><br><span class="line">Object str_OAID = method_OAID.invoke(a,<span class="keyword">this</span>);</span><br><span class="line">Object str_VAID = method_VAID.invoke(a,<span class="keyword">this</span>);</span><br><span class="line">System.out.println((String)str_AAID);</span><br><span class="line">System.out.println((String)str_OAID);</span><br><span class="line">System.out.println((String)str_VAID);</span><br></pre></td></tr></table></figure>
+
+<h2 id="vivo-2-case-2"><a href="#vivo-2-case-2" class="headerlink" title="vivo 2                      case 2"></a>vivo 2                      case 2</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">arg8 = appid     <span class="comment">// supplierconfig.json中vivo的appid</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//getAAID</span></span><br><span class="line">v1 = Uri.parse(<span class="string">"content://com.vivo.vms.IdProvider/IdentifierId/AAID_"</span> + arg8);</span><br><span class="line"><span class="comment">// this.a = context</span></span><br><span class="line">Cursor v0 = <span class="keyword">this</span>.a.getContentResolver().query(v1, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>);</span><br><span class="line">v2 = v0.getString(v0.getColumnIndex(<span class="string">"value"</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">//getOAID</span></span><br><span class="line">v1 = Uri.parse(<span class="string">"content://com.vivo.vms.IdProvider/IdentifierId/OAID"</span>);</span><br><span class="line">Cursor v0 = <span class="keyword">this</span>.a.getContentResolver().query(v1, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>);</span><br><span class="line">v2 = v0.getString(v0.getColumnIndex(<span class="string">"value"</span>));</span><br><span class="line"></span><br><span class="line"><span class="comment">//getVAID</span></span><br><span class="line">v1 = Uri.parse(<span class="string">"content://com.vivo.vms.IdProvider/IdentifierId/VAID_"</span> + arg8);</span><br><span class="line">Cursor v0 = <span class="keyword">this</span>.a.getContentResolver().query(v1, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">null</span>);</span><br><span class="line">v2 = v0.getString(v0.getColumnIndex(<span class="string">"value"</span>));</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="oppo-3-case-3"><a href="#oppo-3-case-3" class="headerlink" title="oppo 3                     case 3"></a>oppo 3                     case 3</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//AAID</span></span><br><span class="line">sysParamters.f():</span><br><span class="line">arg2 = <span class="string">"0x1008611"</span> + getApplicationInfo().packageName + <span class="string">"0xdzfdweiwu"</span></span><br><span class="line">MessageDigest v0_3 = MessageDigest.getInstance(<span class="string">"MD5"</span>);</span><br><span class="line">v0_3.update(arg2.getBytes(<span class="string">"UTF-8"</span>));</span><br><span class="line">arg6 = v0_3.digest()</span><br><span class="line">StringBuilder v1 = <span class="keyword">new</span> StringBuilder();</span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> v0 = <span class="number">0</span>; v0 &lt; arg6.length; ++v0) &#123;</span><br><span class="line">    <span class="keyword">int</span> v3 = arg6[v0];</span><br><span class="line">    <span class="keyword">int</span> v5 = (v5 &amp; <span class="number">0xF0</span>) &gt;&gt; <span class="number">4</span>;</span><br><span class="line">    v1.append(d.a[v5]);</span><br><span class="line">    v1.append(d.a[v3 &amp; <span class="number">15</span>]);</span><br><span class="line">&#125;</span><br><span class="line">str_AAID = v1.toString()</span><br><span class="line"></span><br><span class="line"><span class="comment">//OAID  </span></span><br><span class="line">Info v2_2 = AdvertisingIdClient.getAdvertisingIdInfo(a.a(<span class="keyword">this</span>));</span><br><span class="line">a.c = v2_2.getId()</span><br><span class="line">str_OAID = a.c</span><br><span class="line">    </span><br><span class="line"><span class="comment">//VAID</span></span><br><span class="line">a.d</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="motorola-4-case-4"><a href="#motorola-4-case-4" class="headerlink" title="motorola 4                     case 4"></a>motorola 4                     case 4</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">arg9 = context</span><br><span class="line"></span><br><span class="line"><span class="keyword">this</span>.b = arg9.getPackageName();</span><br><span class="line">String v1 = <span class="keyword">this</span>.b;</span><br><span class="line">Signature[] v1_2 = arg9.getPackageManager().getPackageInfo(v1, <span class="number">0x40</span>).signatures;</span><br><span class="line"><span class="keyword">byte</span>[] v1_3 = v1_2[<span class="number">0</span>].toByteArray();</span><br><span class="line">MessageDigest v3 = MessageDigest.getInstance(<span class="string">"SHA1"</span>);</span><br><span class="line"><span class="keyword">byte</span>[] v3_1 = v3.digest(v1_3);</span><br><span class="line">StringBuilder v4 = <span class="keyword">new</span> StringBuilder();</span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; v3_1.length; ++i) &#123;</span><br><span class="line">	v4.append(Integer.toHexString(v3_1[i] &amp; <span class="number">0xFF</span> | <span class="number">0x100</span>).substring(<span class="number">1</span>, <span class="number">3</span>));</span><br><span class="line">&#125;</span><br><span class="line">String v0 = v4.toString();</span><br><span class="line"><span class="keyword">this</span>.c = v0;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//getAAID</span></span><br><span class="line">String AAID = <span class="keyword">this</span>.a.a(<span class="keyword">this</span>.b, <span class="keyword">this</span>.c, <span class="string">"AUID"</span>);</span><br><span class="line"><span class="comment">//getOAID</span></span><br><span class="line">String OAID = <span class="keyword">this</span>.a.a(<span class="keyword">this</span>.b, <span class="keyword">this</span>.c, <span class="string">"OUID"</span>);</span><br><span class="line"><span class="comment">//getVAID</span></span><br><span class="line">String VAID = <span class="keyword">this</span>.a.a(<span class="keyword">this</span>.b, <span class="keyword">this</span>.c, <span class="string">"DUID"</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">public</span> String <span class="title">a</span><span class="params">(String arg6, String arg7, String arg8)</span> </span>&#123;</span><br><span class="line">    String v0_1;</span><br><span class="line">    Parcel v1 = Parcel.obtain();</span><br><span class="line">    Parcel v2 = Parcel.obtain();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        v1.writeInterfaceToken(<span class="string">"com.heytap.openid.IOpenID"</span>);</span><br><span class="line">        v1.writeString(arg6);</span><br><span class="line">        v1.writeString(arg7);</span><br><span class="line">        v1.writeString(arg8);</span><br><span class="line">        <span class="keyword">this</span>.a.transact(<span class="number">1</span>, v1, v2, <span class="number">0</span>);</span><br><span class="line">        v2.readException();</span><br><span class="line">        v0_1 = v2.readString();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span>(Throwable v0) &#123;</span><br><span class="line">        v2.recycle();</span><br><span class="line">        v1.recycle();</span><br><span class="line">        <span class="keyword">throw</span> v0;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    v2.recycle();</span><br><span class="line">    v1.recycle();</span><br><span class="line">    <span class="keyword">return</span> v0_1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="联想-5-ASUS-6-case5-case-6"><a href="#联想-5-ASUS-6-case5-case-6" class="headerlink" title="联想 5  ASUS 6                case5 = case 6"></a>联想 5  ASUS 6                case5 = case 6</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">b</span><span class="params">(String arg6)</span> </span>&#123;</span><br><span class="line">    String v0_1;</span><br><span class="line">    Parcel v1 = Parcel.obtain();</span><br><span class="line">    Parcel v2 = Parcel.obtain();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        v1.writeInterfaceToken(<span class="string">"com.zui.deviceidservice.IDeviceidInterface"</span>);</span><br><span class="line">        v1.writeString(arg6);</span><br><span class="line">        <span class="keyword">this</span>.a.transact(<span class="number">5</span>, v1, v2, <span class="number">0</span>);			<span class="comment">//AAID			</span></span><br><span class="line">        <span class="keyword">this</span>.a.transact(<span class="number">1</span>, v1, v2, <span class="number">0</span>);			<span class="comment">//OAID  与VAID</span></span><br><span class="line">        v2.readException();</span><br><span class="line">        v0_1 = v2.readString();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span>(Throwable v0) &#123;</span><br><span class="line">        v2.recycle();</span><br><span class="line">        v1.recycle();</span><br><span class="line">        <span class="keyword">throw</span> v0;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    v2.recycle();</span><br><span class="line">    v1.recycle();</span><br><span class="line">    <span class="keyword">return</span> v0_1;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//AAID</span></span><br><span class="line">String v0 = <span class="keyword">this</span>.a.getPackageName();</span><br><span class="line">Log.i(OpenDeviceId.c, <span class="string">"liufeng, getAAID package："</span> + v0);</span><br><span class="line">String str_AAID = b(v0)</span><br><span class="line"></span><br><span class="line"><span class="comment">//OAID</span></span><br><span class="line">String str_OAID = b(v0)     </span><br><span class="line"></span><br><span class="line"><span class="comment">//VAID</span></span><br><span class="line"><span class="keyword">this</span>.a(<span class="string">"liufeng, getVAID package："</span> + v0);</span><br><span class="line">String str_VAID = b(v0)</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="samsung-7-case-7"><a href="#samsung-7-case-7" class="headerlink" title="samsung 7                 case 7"></a>samsung 7                 case 7</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">e</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    String v0_1;</span><br><span class="line">    Parcel v1 = Parcel.obtain();</span><br><span class="line">    Parcel v2 = Parcel.obtain();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        v1.writeInterfaceToken(<span class="string">"com.asus.msa.SupplementaryDID.IDidAidlInterface"</span>);</span><br><span class="line">        <span class="keyword">this</span>.a.transact(<span class="number">5</span>, v1, v2, <span class="number">0</span>);   <span class="comment">//AAID</span></span><br><span class="line">        <span class="keyword">this</span>.a.transact(<span class="number">3</span>, v1, v2, <span class="number">0</span>);   <span class="comment">//OAID</span></span><br><span class="line">        <span class="keyword">this</span>.a.transact(<span class="number">4</span>, v1, v2, <span class="number">0</span>);	 <span class="comment">//VAID</span></span><br><span class="line">        v2.readException();</span><br><span class="line">        v0_1 = v2.readString();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span>(Throwable v0) &#123;</span><br><span class="line">        v2.recycle();</span><br><span class="line">        v1.recycle();</span><br><span class="line">        <span class="keyword">throw</span> v0;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    v2.recycle();</span><br><span class="line">    v1.recycle();</span><br><span class="line">    <span class="keyword">return</span> v0_1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="魅族-8-case-8"><a href="#魅族-8-case-8" class="headerlink" title="魅族 8                                     case 8"></a>魅族 8                                     case 8</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//AAID调用</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">b</span><span class="params">(String arg6)</span> </span>&#123;</span><br><span class="line">    String v0_1;</span><br><span class="line">    Parcel v1 = Parcel.obtain();</span><br><span class="line">    Parcel v2 = Parcel.obtain();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        v1.writeInterfaceToken(<span class="string">"com.samsung.android.deviceidservice.IDeviceIdService"</span>);</span><br><span class="line">        v1.writeString(arg6);</span><br><span class="line">        <span class="keyword">this</span>.a.transact(<span class="number">3</span>, v1, v2, <span class="number">0</span>);</span><br><span class="line">        v2.readException();</span><br><span class="line">        v0_1 = v2.readString();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span>(Throwable v0) &#123;</span><br><span class="line">        v2.recycle();</span><br><span class="line">        v1.recycle();</span><br><span class="line">        <span class="keyword">throw</span> v0;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    v2.recycle();</span><br><span class="line">    v1.recycle();</span><br><span class="line">    <span class="keyword">return</span> v0_1;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//OAID调用</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">a</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    String v0_1;</span><br><span class="line">    Parcel v1 = Parcel.obtain();</span><br><span class="line">    Parcel v2 = Parcel.obtain();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        v1.writeInterfaceToken(<span class="string">"com.samsung.android.deviceidservice.IDeviceIdService"</span>);</span><br><span class="line">        <span class="keyword">this</span>.a.transact(<span class="number">1</span>, v1, v2, <span class="number">0</span>);</span><br><span class="line">        v2.readException();</span><br><span class="line">        v0_1 = v2.readString();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span>(Throwable v0) &#123;</span><br><span class="line">        v2.recycle();</span><br><span class="line">        v1.recycle();</span><br><span class="line">        <span class="keyword">throw</span> v0;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    v2.recycle();</span><br><span class="line">    v1.recycle();</span><br><span class="line">    <span class="keyword">return</span> v0_1;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//VAID调用</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">a</span><span class="params">(String arg6)</span> </span>&#123;</span><br><span class="line">    String v0_1;</span><br><span class="line">    Parcel v1 = Parcel.obtain();</span><br><span class="line">    Parcel v2 = Parcel.obtain();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        v1.writeInterfaceToken(<span class="string">"com.samsung.android.deviceidservice.IDeviceIdService"</span>);</span><br><span class="line">        v1.writeString(arg6);</span><br><span class="line">        <span class="keyword">this</span>.a.transact(<span class="number">2</span>, v1, v2, <span class="number">0</span>);</span><br><span class="line">        v2.readException();</span><br><span class="line">        v0_1 = v2.readString();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span>(Throwable v0) &#123;</span><br><span class="line">        v2.recycle();</span><br><span class="line">        v1.recycle();</span><br><span class="line">        <span class="keyword">throw</span> v0;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    v2.recycle();</span><br><span class="line">    v1.recycle();</span><br><span class="line">    <span class="keyword">return</span> v0_1;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//getAAID</span></span><br><span class="line">String v0 = <span class="keyword">this</span>.mContext.getPackageName();</span><br><span class="line">Log.i(SumsungCore.TAG, <span class="string">"liufeng, getAAID package："</span> + v0);</span><br><span class="line">Log.d(SumsungCore.SAMSUNGTAG, <span class="string">"getAAID Package: "</span> + v0);</span><br><span class="line">String str_AAID = <span class="keyword">this</span>.mDeviceidInterface.b(v0);</span><br><span class="line"></span><br><span class="line"><span class="comment">//getOAID</span></span><br><span class="line">Log.d(SumsungCore.SAMSUNGTAG, <span class="string">"getOAID call"</span>);</span><br><span class="line">String str_OAID = <span class="keyword">this</span>.mDeviceidInterface.a();</span><br><span class="line"></span><br><span class="line"><span class="comment">//getVAID</span></span><br><span class="line">String v0 = <span class="keyword">this</span>.mContext.getPackageName();</span><br><span class="line">Log.i(SumsungCore.TAG, <span class="string">"liufeng, getVAID package："</span> + v0);</span><br><span class="line">Log.d(SumsungCore.SAMSUNGTAG, <span class="string">"getVAID Package: "</span> + v0);</span><br><span class="line">String str_VAID = <span class="keyword">this</span>.mDeviceidInterface.a(v0);</span><br></pre></td></tr></table></figure>
+
+<h2 id="ALPS-9-case9-case-10"><a href="#ALPS-9-case9-case-10" class="headerlink" title="ALPS 9                    case9 = case 10"></a>ALPS 9                    case9 = case 10</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">arg9 为 context</span><br><span class="line">arg10 为 <span class="keyword">new</span> OpenId(<span class="string">"aaid"</span>) <span class="function">or new <span class="title">OpenId</span><span class="params">(<span class="string">"oaid"</span>)</span> or new <span class="title">OpenId</span><span class="params">(<span class="string">"vaid"</span>)</span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function">Uri v1 </span>= Uri.parse(<span class="string">"content://com.meizu.flyme.openidsdk/"</span>);</span><br><span class="line"><span class="comment">//new String[]&#123;arg10.c&#125;   arg10.c 为 "aaid"</span></span><br><span class="line">v1_1 = arg9.getContentResolver().query(v1, <span class="keyword">null</span>, <span class="keyword">null</span>, <span class="keyword">new</span> String[]&#123;arg10.c&#125;, <span class="keyword">null</span>);</span><br><span class="line"></span><br><span class="line">ValueData v0 = <span class="keyword">new</span> ValueData(<span class="keyword">null</span>, <span class="number">0</span>);</span><br><span class="line">v1_1.moveToFirst();</span><br><span class="line"><span class="keyword">int</span> value = v1_1.getColumnIndex(<span class="string">"value"</span>);</span><br><span class="line">v0.a = v1_1.getString(value);</span><br><span class="line"></span><br><span class="line">v0.a 即为 AAID/OAID/VAID</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="努比亚-10-case-11"><a href="#努比亚-10-case-11" class="headerlink" title="努比亚 10                            case 11"></a>努比亚 10                            case 11</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">a.a = Uri.parse(<span class="string">"content://cn.nubia.identity/identity"</span>);</span><br><span class="line">ContentProviderClient v2 = arg6.getContentResolver().acquireUnstableContentProviderClient(a.a);</span><br><span class="line"><span class="comment">//getAAID</span></span><br><span class="line">v0_1 = v2.call(<span class="string">"getAAID"</span>, sysParamters.g(), <span class="keyword">null</span>);  </span><br><span class="line">str_AAID = v0_1.getString(<span class="string">"id"</span>);			<span class="comment">//或者str_AAID = v0_1.getString("message");</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//getOAID</span></span><br><span class="line">v0_1 = v2.call(<span class="string">"getOAID"</span>, <span class="keyword">null</span>, <span class="keyword">null</span>);</span><br><span class="line">str_OAID = v0_1.getString(<span class="string">"id"</span>);			<span class="comment">//或者str_OAID = v0_1.getString("message");</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//getVAID</span></span><br><span class="line">v0_1 = v2.call(<span class="string">"getVAID"</span>, arg7, <span class="keyword">null</span>);</span><br><span class="line">str_VAID = v0_1.getString(<span class="string">"id"</span>);			<span class="comment">//或者str_VAID = v0_1.getString("message");</span></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+
+
+  <article>
+
+  
+    
+    <h3 class="article-title"><a href="/2019/11/21/ida-动态调试/"><span>ida 动态调试</span></a></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2019/11/21/ida-动态调试/" rel="bookmark">
+        <time class="entry-date published" datetime="2019-11-21T13:36:07.000Z">
+          2019-11-21
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+
+
+  <article>
+
+  
+    
+    <h3 class="article-title"><a href="/2019/11/14/ARM反汇编基础/"><span>ARM反汇编基础</span></a></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2019/11/14/ARM反汇编基础/" rel="bookmark">
+        <time class="entry-date published" datetime="2019-11-14T13:14:42.000Z">
+          2019-11-14
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <h2 id="Android-ARM-EABI"><a href="#Android-ARM-EABI" class="headerlink" title="Android ARM EABI"></a>Android ARM EABI</h2><p>　　嵌入式设备的ABI称为嵌入式应用二进制接口.</p>
+<p>　　基于Android的EABI称为”ARM EABI”,</p>
+<h3 id="armeabi"><a href="#armeabi" class="headerlink" title="armeabi"></a>armeabi</h3>
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+
+
+  <article>
+
+  
+    
     <h3 class="article-title"><a href="/2019/11/12/动态分析Android程序/"><span>动态分析Android程序</span></a></h3>
     
   
@@ -449,305 +726,6 @@
 
 
 
-  <article>
-
-  
-    
-    <h3 class="article-title"><a href="/2019/10/29/aar和jar文件简介/"><span>aar和jar文件简介</span></a></h3>
-    
-  
-
-  <div class="article-top-meta">
-    <span class="posted-on">
-      <a href="/2019/10/29/aar和jar文件简介/" rel="bookmark">
-        <time class="entry-date published" datetime="2019-10-29T11:38:41.000Z">
-          2019-10-29
-        </time>
-      </a>
-    </span>
-  </div>
-
-
-  
-
-  <div class="article-content">
-    <div class="entry">
-      
-        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>​        在使用 Eclipse 开发 Android 的那个时代（其实也就几年前而已），如果想代码打包，只有 <code>JAR</code> 包一个方法，但是 <code>JAR</code> 只能把 Java 文件代码打包进去，如果要使用一个有布局和资源的库的话，除了将 <code>JAR</code> 放入 libs 外,还需要引入相关的资源和配置文件，十分不优雅。</p>
-<p>​        Android Studio 出来之后，出现了一个新的方法，打包 <code>AAR</code> 文件 ，这个不仅可以把 Java 文件给打进去，还包含 AndroidManifest.xml 和资源文件等，使用的话，直接引入一个 <code>AAR</code> 文件就足够了，非常方便。</p>
-<h2 id="jar和aar的区别"><a href="#jar和aar的区别" class="headerlink" title="jar和aar的区别"></a>jar和aar的区别</h2><p>*.jar：只包含了class文件与清单文件，不包含资源文件，如图片等所有res中的文件。</p>
-<p>*.aar：包含所有资源，class以及res资源文件全部包含</p>
-<p>如果你只是一个简单的类库那么使用生成的.jar文件即可；如果你的是一个UI库，包含一些自己写的控件布局文件以及字体等资源文件那么就只能使用.aar文件。</p>
-<ol>
-<li><p>*.jar，JAR 文件就是 Java Archive File，顾名思意，它的应用是与 Java 息息相关的，是 Java 的一种文档格式。只包含了class文件与清单文件 ，不包含资源文件，如图片等所有res中的文件。找一个jar文件，然后修改后缀名为‘zip’或者‘rar’格式，然后解压该文件，打开解压后的文件夹，截图如下所示：</p>
-</li>
-<li><p>*.jar，JAR 文件就是 Java Archive File，顾名思意，它的应用是与 Java 息息相关的，是 Java 的一种文档格式。只包含了class文件与清单文件 ，不包含资源文件，如图片等所有res中的文件。</p>
-<h2 id="ARR文件结构"><a href="#ARR文件结构" class="headerlink" title="ARR文件结构"></a>ARR文件结构</h2></li>
-</ol>
-<p>aar包是Android Library Project的二进制发布包。</p>
-<p>文件的扩展名是aar，而且maven包类型也应该是aar， 不过这文件本身就是一个简单的zip文件，里面有如下的内容：</p>
-<ul>
-<li>/AndroidManifest.xml (必须)</li>
-<li>/classes.jar (必须)</li>
-<li>/res/ (必须)</li>
-<li>/R.txt (必须)</li>
-<li>/assets/ (可选)</li>
-<li>/libs/*.jar (可选)</li>
-<li>/jni/<abi>/*.so (可选)</abi></li>
-<li>/proguard.txt (可选)</li>
-<li>/lint.jar (可选)</li>
-</ul>
-<p>这些条目，都在zip文件的根目录下。</p>
-<p>R.txt 文件是 aapt –output-text-symbols 的输出。</p>
-<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a href="https://www.jianshu.com/p/d7ef84586949" target="_blank" rel="noopener">jar包与aar包文件的区别</a></p>
-<p><a href="https://www.jianshu.com/p/0a2572a63ed5" target="_blank" rel="noopener">Android中aar与jar的区别</a></p>
-
-      
-    </div>
-
-  </div>
-
-  <div class="article-footer">
-    <div class="article-meta pull-left">
-
-    
-
-    
-
-    </div>
-
-    
-  </div>
-</article>
-
-
-
-  <article>
-
-  
-    
-    <h3 class="article-title"><a href="/2019/10/29/如何分析一个程序/"><span>如何分析一个程序</span></a></h3>
-    
-  
-
-  <div class="article-top-meta">
-    <span class="posted-on">
-      <a href="/2019/10/29/如何分析一个程序/" rel="bookmark">
-        <time class="entry-date published" datetime="2019-10-29T08:14:44.000Z">
-          2019-10-29
-        </time>
-      </a>
-    </span>
-  </div>
-
-
-  
-
-  <div class="article-content">
-    <div class="entry">
-      
-        <h2 id="编写一个安卓程序"><a href="#编写一个安卓程序" class="headerlink" title="编写一个安卓程序"></a>编写一个安卓程序</h2><p>在 Android studio 中编写一个注册码的应用程序</p>
-<p><img src="/2019/10/29/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F/app.png" alt="app"></p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line">        setContentView(R.layout.activity_main);</span><br><span class="line">        setTitle(R.string.unregister);</span><br><span class="line">        <span class="keyword">final</span> EditText edit_username = (EditText)findViewById(R.id.editText1);</span><br><span class="line">        <span class="keyword">final</span> EditText edit_sn = (EditText)findViewById(R.id.editText2);</span><br><span class="line">        <span class="keyword">final</span> Button btn_register = (Button)findViewById(R.id.button);</span><br><span class="line">        btn_register.setOnClickListener(<span class="keyword">new</span> View.OnClickListener()&#123;</span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span></span>&#123;</span><br><span class="line">                <span class="keyword">if</span> (!checkSN(edit_username.getText().toString().trim(),edit_sn.getText().toString().trim()))&#123;</span><br><span class="line">                    Toast.makeText(MainActivity.<span class="keyword">this</span>,R.string.unsuccessed,Toast.LENGTH_SHORT).show();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span>&#123;</span><br><span class="line">                    Toast.makeText(MainActivity.<span class="keyword">this</span>,R.string.successed,Toast.LENGTH_SHORT).show();</span><br><span class="line">                    btn_register.setEnabled(<span class="keyword">false</span>);</span><br><span class="line">                    setTitle(R.string.registered);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<p>checkSN用于验证用户名和注册码是否匹配.</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">checkSN</span><span class="params">(String username, String sn)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span>&#123;</span><br><span class="line">            <span class="keyword">if</span> ((username == <span class="keyword">null</span>) || (username.length() == <span class="number">0</span>)) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> ((sn == <span class="keyword">null</span>) || (sn.length() != <span class="number">16</span>)) &#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            MessageDigest digest = MessageDigest.getInstance(<span class="string">"MD5"</span>);</span><br><span class="line">            digest.reset();</span><br><span class="line">            digest.update(username.getBytes());</span><br><span class="line">            String hexstr = <span class="string">""</span>;</span><br><span class="line">            StringBuffer hexString = <span class="keyword">new</span> StringBuffer();</span><br><span class="line">            <span class="keyword">byte</span>[] bytes = digest.digest();</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;bytes.length; i++)&#123;</span><br><span class="line">                <span class="keyword">if</span>(Integer.toHexString(<span class="number">0xFF</span> &amp; bytes[i]).length() &lt; <span class="number">2</span>)&#123;</span><br><span class="line">                    hexstr = <span class="string">"0"</span>+Integer.toHexString(<span class="number">0xFF</span> &amp; bytes[i]);</span><br><span class="line">                &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                    hexstr = Integer.toHexString(<span class="number">0xFF</span> &amp; bytes[i]);</span><br><span class="line">                &#125;</span><br><span class="line">                hexString.append(hexstr);</span><br><span class="line">            &#125;</span><br><span class="line">            StringBuilder sb = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">            <span class="keyword">for</span>(<span class="keyword">int</span> i =<span class="number">0</span>; i &lt; hexString.length();i+=<span class="number">2</span>)&#123;</span><br><span class="line">                sb.append(hexString.charAt(i));</span><br><span class="line">            &#125;</span><br><span class="line">            String userSN = sb.toString();</span><br><span class="line">            <span class="keyword">if</span>(!userSN.equalsIgnoreCase(sn))&#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;<span class="keyword">catch</span>(NoSuchAlgorithmException e)&#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="Android-studio模拟器"><a href="#Android-studio模拟器" class="headerlink" title="Android studio模拟器"></a>Android studio模拟器</h2><p>AMD的cpu不支持<code>Android studio</code>的默认AVD,可以使用 <code>genymotion</code>安卓模拟器</p>
-<ol>
-<li>到<a href="https://www.genymotion.com/" target="_blank" rel="noopener">官网</a>下载安装个人版<code>genymotion</code></li>
-<li>新建一个虚拟机设备</li>
-<li>在AndroidStudio中下载Genymotion插件: genymotion</li>
-<li>点击 View-&gt;toobar ,这样就可以点击genymotion的图标打开</li>
-</ol>
-<h2 id="破解安卓应用程序"><a href="#破解安卓应用程序" class="headerlink" title="破解安卓应用程序"></a>破解安卓应用程序</h2><p>破解Android程序的方法通常是:使用apktool反编译apk文件,生成smali格式的反汇编代码,通过阅读smali文件的代码来理解程序的运行机制,找到突破口,并对代码进行修改;使用Apktool重新编译生成的APK文件并对其进行签名.</p>
-<ul>
-<li><p>下载apktool</p>
-</li>
-<li><p><a href="https://ibotpeaches.github.io/Apktool/install/" target="_blank" rel="noopener">https://ibotpeaches.github.io/Apktool/install/</a> </p>
-</li>
-<li><p>分析apk文件</p>
-<p>​        apktool反编译apk文件</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apktool d ./app.apk -o outdir</span><br></pre></td></tr></table></figure>
-
-
-
-</li>
-</ul>
-<p>  ​        对大部分Android程序来说,错误提示信息是指引我们找到关键代码的明灯.错误提示代码附近通常就是程序的核心验证代码,错误提示属于Android程序中的字符串资源.</p>
-<p>  ​        res/values/strings.xml文件的内容,除了系统默认生成的一系列”abc_”开头的字符串,其他都是程序使用的字符串.</p>
-<p>  <img src="/2019/10/29/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F/strings.png" alt="Strings.xml"></p>
-<p>  ​        在开发Android程序时,strings.xml中的字符串资源都在R.java文件的String类中标识,每个字符串都有唯一的int类型的索引值,所有的索引值都在与strings.xml同目录下的public.xml文件中.</p>
-<p>  <img src="/2019/10/29/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F/public.png" alt="public.xml"></p>
-<p>  ​        利用grep 对反编译目录进行查找,找出关键代码所在位置</p>
-<p>  <img src="/2019/10/29/%E5%A6%82%E4%BD%95%E5%88%86%E6%9E%90%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F/grep.png" alt="找出关键代码"></p>
-<ul>
-<li><p>修改smali代码</p>
-<p>分析其smali代码,然后修改其跳转指令 if-nez 改为 if-eqz (if-eqz与if-nez功能相反)</p>
-</li>
-<li><p>重新编译APK文件并签名</p>
-<p><code>apktool b outdir</code></p>
-<p> <a href="https://hbltjdw.github.io/2019/10/28/apk手动签名/" target="_blank" rel="noopener">apk手动签名</a> </p>
-</li>
-</ul>
-
-      
-    </div>
-
-  </div>
-
-  <div class="article-footer">
-    <div class="article-meta pull-left">
-
-    
-
-    
-
-    </div>
-
-    
-  </div>
-</article>
-
-
-
-  <article>
-
-  
-    
-    <h3 class="article-title"><a href="/2019/10/28/adb总结/"><span>adb总结</span></a></h3>
-    
-  
-
-  <div class="article-top-meta">
-    <span class="posted-on">
-      <a href="/2019/10/28/adb总结/" rel="bookmark">
-        <time class="entry-date published" datetime="2019-10-28T14:55:07.000Z">
-          2019-10-28
-        </time>
-      </a>
-    </span>
-  </div>
-
-
-  
-
-  <div class="article-content">
-    <div class="entry">
-      
-        <h2 id="adb安装应用"><a href="#adb安装应用" class="headerlink" title="adb安装应用"></a>adb安装应用</h2><ul>
-<li><p>开启USB调试</p>
-<ol>
-<li>模拟器或者USB连接的手机,点击<code>设置</code>,连续点击<code>版本号</code>,进入<code>开发者选项</code></li>
-<li>进入<code>开发者选项</code>,打开<code>USB调试</code></li>
-</ol>
-</li>
-<li><p>adb安装应用</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb devices    				//查看设备是否在线</span><br><span class="line">adb install xxx.apk			//安装应用</span><br></pre></td></tr></table></figure>
-
-
-
-</li>
-</ul>
-<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a href="https://www.jianshu.com/p/899fef07929f" target="_blank" rel="noopener">ADB总结</a></p>
-
-      
-    </div>
-
-  </div>
-
-  <div class="article-footer">
-    <div class="article-meta pull-left">
-
-    
-
-    
-
-    </div>
-
-    
-  </div>
-</article>
-
-
-
-  <article>
-
-  
-    
-    <h3 class="article-title"><a href="/2019/10/28/apk手动签名/"><span>apk手动签名</span></a></h3>
-    
-  
-
-  <div class="article-top-meta">
-    <span class="posted-on">
-      <a href="/2019/10/28/apk手动签名/" rel="bookmark">
-        <time class="entry-date published" datetime="2019-10-28T14:48:49.000Z">
-          2019-10-28
-        </time>
-      </a>
-    </span>
-  </div>
-
-
-  
-
-  <div class="article-content">
-    <div class="entry">
-      
-        <h2 id="V1和V2签名"><a href="#V1和V2签名" class="headerlink" title="V1和V2签名"></a>V1和V2签名</h2><ol>
-<li>V1签名：<br>来自<code>JDK （ jarsigner ）</code>,对 zip 压缩包的每个文件进行验证，签名后还能对压缩包修改（移动/重新压缩文件）<br>对V1签名的 apk/jar 解压,在 META-INF 存放签名文件( MANIFEST.MF, CERT.SF, CERT.RSA )<br>其中 <code>MANIFEST.MF</code> 文件保存所有文件的 SHA1 指纹(除了 META-INF 文件),由此可知:<strong>V1签名是对压缩包中单个文件签名验证</strong></li>
-<li>V2签名：<br>来自 Google（apksigner），对 zip 压缩包的整个文件验证，签名后不能修改压缩包(包括 zipalign )<br>对V2签名的 apk 解压,没有发现签名文件,重新压缩后V2签名就失效, 由此可知: <strong>V2签名是对整个 APK 签名验证</strong></li>
-<li>V2签名优点：<br>签名更安全（不能修改压缩包）<br>签名验证时间更短（不需要解压验证），因此安装速度更快</li>
-</ol>
-<h2 id="V2签名过程"><a href="#V2签名过程" class="headerlink" title="V2签名过程"></a>V2签名过程</h2><ol>
-<li><p><code>zipalign</code> </p>
-<p>位于 Android SDK/build-tools/SDK 版本 /zipalign.exe<br>zipalign 是对 zip 包对齐的工具，使APK包内未压缩的数据有序排列对齐，从而减少 APP 运行时消耗</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">zipalign -v 4 in.apk out.apk 		//4字节对齐优化命令</span><br><span class="line">zipalign -c -v 4 in.apk 			//检查 APK 是否对齐</span><br></pre></td></tr></table></figure>
-</li>
-<li><p><code>apksigner</code></p>
-<p>这个工具位于SDK目录的<code>build-tools</code>目录下。必须说明的是，v2签名方式时在<code>Android7.0</code>后才推出的，所以只有版本&gt;25的<code>SDK\build-tools\</code>中才能找到<code>apksigner.jar</code>.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">java -jar apksigner.jar sign           			//执行签名操作</span><br><span class="line">--ks 你的jks路径                                	//jks签名证书路径</span><br><span class="line">--ks-key-alias 你的alias           				//生成jks时指定的alias</span><br><span class="line">--ks-pass pass:你的密码          				//KeyStore密码</span><br><span class="line">--key-pass pass:你的密码   						//签署者的密码，即生成jks时指定alias对应的密码</span><br><span class="line">--out output.apk                         		//输出路径</span><br><span class="line">input.apk                                   	//被签名的apk</span><br></pre></td></tr></table></figure>
-
-<p>示例</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar apksigner.jar sign  --ks key.jks  --ks-key-alias releasekey  --ks-pass pass:pp123456  --key-pass pass:pp123456  --out output.apk  input.apk</span><br></pre></td></tr></table></figure>
-
-
-
-</li>
-</ol>
-<ol start="3">
-<li><p>检查是否签名成功</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar apksigner.jar verify -v my.apk</span><br></pre></td></tr></table></figure>
-
-
-
-</li>
-</ol>
-<p>##　参考文章</p>
-<p><a href="https://www.jianshu.com/p/e1e2fd05bb62" target="_blank" rel="noopener">Android开发之通过apksigner对apk进行v2签名</a></p>
-<p><a href="https://www.jianshu.com/p/db8751060146" target="_blank" rel="noopener">V1 和 V2 签名工具</a></p>
-
-      
-    </div>
-
-  </div>
-
-  <div class="article-footer">
-    <div class="article-meta pull-left">
-
-    
-
-    
-
-    </div>
-
-    
-  </div>
-</article>
-
-
-
 
 <nav class="pagination">
   
@@ -763,7 +741,7 @@
     Theme by <a href="https://github.com/CodeDaraW/Hacker" target="_blank">Hacker</a>
     </br>
     
-    &copy; 2019 DW Jia
+    &copy; 2020 DW Jia
     
   </p>
 </footer>

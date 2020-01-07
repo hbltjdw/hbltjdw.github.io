@@ -1,0 +1,197 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>dex加载流程 | Hexo</title>
+
+  
+  <meta name="author" content="DW Jia">
+  
+
+  
+  <meta name="description" content="ClassLoaderJava中的ClassLoaderBootstrap ClassLoader： 根ClassLoader，用C++实现，专门用来加载Java的核心API：$JAVA_HOME中jre/lib/rt.jar中所有class文件rt的意思是runtime
+Extension Cla">
+  
+
+  
+  
+  <meta name="keywords" content="">
+  
+
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+  <meta property="og:title" content="dex加载流程"/>
+
+  <meta property="og:site_name" content="Hexo"/>
+
+  
+  <meta property="og:image" content="/favicon.ico"/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+</head>
+
+
+<body>
+<div class="blog">
+  <div class="content">
+
+    <header>
+  <div class="site-branding">
+    <h1 class="site-title">
+      <a href="/">Hexo</a>
+    </h1>
+    <p class="site-description"></p>
+  </div>
+  <nav class="site-navigation">
+    <ul>
+      
+        <li><a href="/">主页</a></li>
+      
+        <li><a href="/archives">归档</a></li>
+      
+    </ul>
+  </nav>
+</header>
+
+    <main class="site-main posts-loop">
+    <article>
+
+  
+    
+    <h3 class="article-title"><span>dex加载流程</span></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2020/01/07/dex加载流程/" rel="bookmark">
+        <time class="entry-date published" datetime="2020-01-07T10:04:07.000Z">
+          2020-01-07
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <h2 id="ClassLoader"><a href="#ClassLoader" class="headerlink" title="ClassLoader"></a>ClassLoader</h2><h3 id="Java中的ClassLoader"><a href="#Java中的ClassLoader" class="headerlink" title="Java中的ClassLoader"></a>Java中的ClassLoader</h3><p><code>Bootstrap ClassLoader</code>： 根ClassLoader，用C++实现，专门用来加载Java的核心API：$JAVA_HOME中jre/lib/rt.jar中所有class文件rt的意思是runtime</p>
+<p><code>Extension ClassLoade</code>r： 加载Java扩展API jre/lib/ext中的类</p>
+<p><code>App ClassLoader</code>： 加载classpath目录下定义的class，也就是应用程序用到的ClassLoader。加载当前应用程序ClassPath下面的所有的jar和Class文件。</p>
+<p><code>Custom ClassLoader</code>： 可以自定义的ClassLoader，可以继承这个ClassLoader然后自己实现。</p>
+<h3 id="Android中的ClassLoader"><a href="#Android中的ClassLoader" class="headerlink" title="Android中的ClassLoader"></a>Android中的<code>ClassLoader</code></h3><p><code>BootClassLoader</code>:主要用来加载<code>FrameWork</code>层的class文件</p>
+<p><code>PathClassLoader</code>:继承自<code>BaseDexClassLoader</code>，用来加载已经安装到系统中的apk中的class文件，</p>
+<p><code>DexClassLoader</code>:继承自<code>BaseDexClassLoader</code>，用来加载指定的目录中的class文件</p>
+<p>下面看一下 <code>ClassLoader</code>的源码，最重要的是<code>loadClass</code> 方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> Class&lt;?&gt; loadClass(String name, <span class="keyword">boolean</span> resolve)</span><br><span class="line">    <span class="keyword">throws</span> ClassNotFoundException</span><br><span class="line">&#123;</span><br><span class="line">        <span class="comment">// 第一步</span></span><br><span class="line">        Class&lt;?&gt; c = findLoadedClass(name);</span><br><span class="line">        <span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">// 第二步</span></span><br><span class="line">                <span class="keyword">if</span> (parent != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    c = parent.loadClass(name, <span class="keyword">false</span>);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    c = findBootstrapClassOrNull(name);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">                <span class="comment">// ClassNotFoundException thrown if class not found</span></span><br><span class="line">                <span class="comment">// from the non-null parent class loader</span></span><br><span class="line">            &#125;</span><br><span class="line">           <span class="comment">//第三步</span></span><br><span class="line">            <span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="comment">// If still not found, then invoke findClass in order</span></span><br><span class="line">                <span class="comment">// to find the class.</span></span><br><span class="line">                c = findClass(name);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> c;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>findLoadedClass(name)检查这个类是否被加载过，最终执行到native方法去查找 </li>
+<li>如果没有并且其父类不为空，执行父类的loadClass()方法 </li>
+<li>如果最终还是没有找到，就执行findClass(name)方法自己去加载这个类。</li>
+</ol>
+<p>在 <code>BaseDexClassLoader</code>中查看findClass()方法的实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BaseDexClassLoader</span> <span class="keyword">extends</span> <span class="title">ClassLoader</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">   ......</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">protected</span> Class&lt;?&gt; findClass(String name) <span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">        List&lt;Throwable&gt; suppressedExceptions = <span class="keyword">new</span> ArrayList&lt;Throwable&gt;();</span><br><span class="line">        Class c = pathList.findClass(name, suppressedExceptions);</span><br><span class="line">        <span class="keyword">if</span> (c == <span class="keyword">null</span>) &#123;</span><br><span class="line">            ClassNotFoundException cnfe = <span class="keyword">new</span> ClassNotFoundException(</span><br><span class="line">                    <span class="string">"Didn't find class \""</span> + name + <span class="string">"\" on path: "</span> + pathList);</span><br><span class="line">            <span class="keyword">for</span> (Throwable t : suppressedExceptions) &#123;</span><br><span class="line">                cnfe.addSuppressed(t);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">throw</span> cnfe;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> c;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"> ......</span><br></pre></td></tr></table></figure>
+
+<p>可以看到这里调用了<code>pathList.findClass()</code>，<code>pathList</code>是<code>BaseDexClassLoader</code>的一个成员变量<code>DexPathList</code></p>
+<p>继续查看<code>pathList.findClass()</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Class&lt;?&gt; findClass(String name, List&lt;Throwable&gt; suppressed) &#123;</span><br><span class="line">       <span class="keyword">for</span> (Element element : dexElements) &#123;</span><br><span class="line">           Class&lt;?&gt; clazz = element.findClass(name, definingContext, suppressed);</span><br><span class="line">           <span class="keyword">if</span> (clazz != <span class="keyword">null</span>) &#123;</span><br><span class="line">               <span class="keyword">return</span> clazz;</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">if</span> (dexElementsSuppressedExceptions != <span class="keyword">null</span>) &#123;</span><br><span class="line">           suppressed.addAll(Arrays.asList(dexElementsSuppressedExceptions));</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>遍历<code>dexElements[]</code>,在每一个element对象中继续调用findclass(),返回第一个不为null的值.</p>
+<p>这个Element数组是<code>DexPathList</code>初始化 的时候被创建</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">DexPathList</span><span class="params">(ClassLoader definingContext, ByteBuffer[] dexFiles)</span> </span>&#123;</span><br><span class="line">     <span class="keyword">if</span> (definingContext == <span class="keyword">null</span>) &#123;</span><br><span class="line">         <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException(<span class="string">"definingContext == null"</span>);</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">if</span> (dexFiles == <span class="keyword">null</span>) &#123;</span><br><span class="line">         <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException(<span class="string">"dexFiles == null"</span>);</span><br><span class="line">     &#125;</span><br><span class="line">     <span class="keyword">if</span> (Arrays.stream(dexFiles).anyMatch(v -&gt; v == <span class="keyword">null</span>)) &#123;</span><br><span class="line">         <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException(<span class="string">"dexFiles contains a null Buffer!"</span>);</span><br><span class="line">     &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">this</span>.definingContext = definingContext;</span><br><span class="line">      <span class="comment">// TODO It might be useful to let in-memory dex-paths have native libraries.</span></span><br><span class="line">      <span class="keyword">this</span>.nativeLibraryDirectories = Collections.emptyList();</span><br><span class="line">      <span class="keyword">this</span>.systemNativeLibraryDirectories =</span><br><span class="line">              splitPaths(System.getProperty(<span class="string">"java.library.path"</span>), <span class="keyword">true</span>);</span><br><span class="line">      <span class="keyword">this</span>.nativeLibraryPathElements = makePathElements(<span class="keyword">this</span>.systemNativeLibraryDirectories);</span><br><span class="line"></span><br><span class="line">      ArrayList&lt;IOException&gt; suppressedExceptions = <span class="keyword">new</span> ArrayList&lt;IOException&gt;();</span><br><span class="line">      <span class="keyword">this</span>.dexElements = makeInMemoryDexElements(dexFiles, suppressedExceptions);</span><br><span class="line">      <span class="keyword">if</span> (suppressedExceptions.size() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">          <span class="keyword">this</span>.dexElementsSuppressedExceptions =</span><br><span class="line">                  suppressedExceptions.toArray(<span class="keyword">new</span> IOException[suppressedExceptions.size()]);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          dexElementsSuppressedExceptions = <span class="keyword">null</span>;</span><br><span class="line">      &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到<code>this.dexElements = makeInMemoryDexElements(dexFiles, suppressedExceptions);</code>利用函数<code>makeInMemoryDexElements</code>来创建<code>dexElements[]</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> Element[] makeInMemoryDexElements(ByteBuffer[] dexFiles,</span><br><span class="line">        List&lt;IOException&gt; suppressedExceptions) &#123;</span><br><span class="line">    Element[] elements = <span class="keyword">new</span> Element[dexFiles.length];</span><br><span class="line">    <span class="keyword">int</span> elementPos = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (ByteBuffer buf : dexFiles) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            DexFile dex = <span class="keyword">new</span> DexFile(buf);</span><br><span class="line">            elements[elementPos++] = <span class="keyword">new</span> Element(dex);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException suppressed) &#123;</span><br><span class="line">            System.logE(<span class="string">"Unable to load dex file: "</span> + buf, suppressed);</span><br><span class="line">            suppressedExceptions.add(suppressed);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (elementPos != elements.length) &#123;</span><br><span class="line">        elements = Arrays.copyOf(elements, elementPos);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> elements;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>遍历传入的参数<code>dexFiles</code>,对每一个<code>dexFiles</code>创建<code>DexFile</code>对象,并根据<code>DexFile</code>创建<code>Element</code>对象,加入到<code>elements[]</code>数组中,返回<code>elements[]</code>数组.</p>
+<h2 id="获取A3AEECD8-dex的elements"><a href="#获取A3AEECD8-dex的elements" class="headerlink" title="获取A3AEECD8.dex的elements[]"></a>获取A3AEECD8.dex的elements[]</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Globals::absoluteEncryptJar_ = /data/user/<span class="number">0</span>/com.example.msa_sdk/<span class="number">.00000000000</span>/A3AEECD8.dex</span><br><span class="line"></span><br><span class="line">v3 = __GetPathList(Globals::env_, Globals::classLoader_);</span><br><span class="line">v4 = NewStringUTF(Globals::env_, Globals::absoluteEncryptJar_);               </span><br><span class="line">v5 = NewStringUTF(Globals::env_, <span class="string">"makeInMemoryDexElements"</span>);</span><br><span class="line">v6 = CallMakeInMemoryDexElements(Globals::env_, v3, v4, v5);</span><br></pre></td></tr></table></figure>
+
+<p><code>CallMakeInMemoryDexElements</code>实际上是执行了<code>&quot;com/bun/miitmdid/core/Jlibrary&quot;</code>中的<code>&quot;o0o0o0o0o0&quot;</code>方法,并传递四个参数分别为</p>
+<ol>
+<li><code>Ldalvik/system/DexPathList</code> </li>
+<li><code>Globals::absoluteEncryptJar_</code></li>
+<li><code>&quot;makeInMemoryDexElements&quot;</code></li>
+<li>0</li>
+</ol>
+<p><code>o0o0o0o0o0</code>执行了</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">makeInMemoryDexElements(dexFiles, suppressedExceptions);</span><br></pre></td></tr></table></figure>
+
+<p>其中<code>dexFiles</code> 为 <code>&quot;/data/user/0/com.example.msa_sdk/.00000000000/A3AEECD8.dex&quot;</code></p>
+<p>查看<code>makeInMemoryDexElements</code>源码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> Element[] makeInMemoryDexElements(ByteBuffer[] dexFiles,</span><br><span class="line">        List&lt;IOException&gt; suppressedExceptions) &#123;</span><br><span class="line">    Element[] elements = <span class="keyword">new</span> Element[dexFiles.length];</span><br><span class="line">    <span class="keyword">int</span> elementPos = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (ByteBuffer buf : dexFiles) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            DexFile dex = <span class="keyword">new</span> DexFile(buf);</span><br><span class="line">            elements[elementPos++] = <span class="keyword">new</span> Element(dex);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException suppressed) &#123;</span><br><span class="line">            System.logE(<span class="string">"Unable to load dex file: "</span> + buf, suppressed);</span><br><span class="line">            suppressedExceptions.add(suppressed);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (elementPos != elements.length) &#123;</span><br><span class="line">        elements = Arrays.copyOf(elements, elementPos);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> elements;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p> 遍历<code>dexFile</code>,依次创建<code>DexFile</code>和<code>Element</code>，然后放到数组中返回。 </p>
+<p>数组Elements[] 数组中装有dex文件</p>
+<p>因此v6 为 <code>/data/user/0/com.example.msa_sdk/.00000000000/A3AEECD8.dex</code> 的elements</p>
+<h2 id="获取当前classloader的Elements"><a href="#获取当前classloader的Elements" class="headerlink" title="获取当前classloader的Elements[]"></a>获取当前classloader的Elements[]</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">v8 = __GetElementArray(Globals::env_, Globals::classLoader_);</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">__int64 __fastcall __GetElementArray(__int64 a1, __int64 a2)                        <span class="comment">//__GetElementArray(Globals::env_, Globals::classLoader_);</span></span><br><span class="line">&#123;</span><br><span class="line">  __int64 v2; <span class="comment">// x21</span></span><br><span class="line">  __int64 v3; <span class="comment">// x19</span></span><br><span class="line">  __int64 v4; <span class="comment">// x0</span></span><br><span class="line">  __int64 v5; <span class="comment">// x20</span></span><br><span class="line">  __int64 v6; <span class="comment">// x0</span></span><br><span class="line">  __int64 v7; <span class="comment">// x21</span></span><br><span class="line">  __int64 v8; <span class="comment">// x0</span></span><br><span class="line">  __int64 v9; <span class="comment">// x22</span></span><br><span class="line">  __int64 v10; <span class="comment">// x0</span></span><br><span class="line">  __int64 v11; <span class="comment">// x23</span></span><br><span class="line"></span><br><span class="line">  v2 = a2;                                                      <span class="comment">//Globals::classLoader_</span></span><br><span class="line">  v3 = a1;                                                      <span class="comment">//Globals::env_</span></span><br><span class="line">  v4 = FindClass(Globals::env_,<span class="string">"dalvik/system/BaseDexClassLoader"</span>);</span><br><span class="line">  v5 = v4;</span><br><span class="line">  v6 = GetFieldID(Globals::env_,v4,<span class="string">"pathList"</span>,<span class="string">"Ldalvik/system/DexPathList;"</span>);</span><br><span class="line">  v7 = GetObjectField(Globals::env_, Globals::classLoader_, v6);</span><br><span class="line">  v8 = FindClass(Globals::env_, <span class="string">"dalvik/system/DexPathList"</span>);</span><br><span class="line">  v9 = v8; </span><br><span class="line">  v10 = GetFieldID(Globals::env_,v8,<span class="string">"dexElements"</span>,<span class="string">"[Ldalvik/system/DexPathList$Element;"</span>);</span><br><span class="line">  v11 = GetObjectField(Globals::env_, v7, v10);</span><br><span class="line">  <span class="keyword">if</span> ( v9 )</span><br><span class="line">    DeleteLocalRef(v3, v9);</span><br><span class="line">  <span class="keyword">if</span> ( v7 )</span><br><span class="line">    DeleteLocalRef(v3, v7);</span><br><span class="line">  <span class="keyword">if</span> ( v5 )</span><br><span class="line">    DeleteLocalRef(v3, v5);</span><br><span class="line">  <span class="keyword">return</span> v11;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中,v7为<code>dalvik/system/BaseDexClassLoader</code>中的成员变量<code>pathList</code>的值.</p>
+<p>返回值v11为<code>dalvik/system/DexPathList</code>中的成员变量<code>dexElements[]</code>的值.</p>
+<p>因此v8为<code>dalvik/system/DexPathList</code>中的成员变量<code>dexElements[]</code>的值</p>
+<p>即v8为 <code>com.bun.miitmdid.core.classLoader</code>中的<code>pathList</code>中的<code>dexElements[]</code></p>
+<h2 id="合并A3AEECD8-dex和classloader的Elements-并重新赋值"><a href="#合并A3AEECD8-dex和classloader的Elements-并重新赋值" class="headerlink" title="合并A3AEECD8.dex和classloader的Elements[] 并重新赋值"></a>合并A3AEECD8.dex和classloader的Elements[] 并重新赋值</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">  v6 为 /data/user/<span class="number">0</span>/com.example.msa_sdk/<span class="number">.00000000000</span>/A3AEECD8.dex 的elements</span><br><span class="line">  v8为 com.bun.miitmdid.core.classLoader 中的pathList中的dexElements[]</span><br><span class="line">  v9 = GetArrayLength(Globals::env_, v8);                                                </span><br><span class="line">  v10 = GetArrayLength(Globals::env_, v6);</span><br><span class="line">  v11 = __NewArray(Globals::env_, <span class="string">"dalvik/system/DexPathList$Element"</span>, (<span class="keyword">unsigned</span> <span class="keyword">int</span>)(v9 + v10)); </span><br><span class="line"><span class="comment">// 两个if为新建一个Elements[]值为合并之后的v6和v8</span></span><br><span class="line">  <span class="keyword">if</span> ( v10 &gt; <span class="number">0</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">do</span></span><br><span class="line">    &#123;</span><br><span class="line">      v12 = GetObjectArrayElement(Globals::env_, v6, v7);             </span><br><span class="line">      v13 = v7++;                                                     </span><br><span class="line">      SetObjectArrayElement(Globals::env_, v11, v13, v12);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> ( v7 != v10 );</span><br><span class="line">  &#125;</span><br><span class="line">  v14 = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">if</span> ( v9 &gt; <span class="number">0</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">do</span></span><br><span class="line">    &#123;</span><br><span class="line">      v15 = GetObjectArrayElement(Globals::env_, v8, v14);              </span><br><span class="line">      v16 = v10 + v14++;                                               </span><br><span class="line">      SetObjectArrayElement(Globals::env_, v11, v16, v15);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">while</span> ( v14 != v9 );</span><br><span class="line">  &#125;</span><br><span class="line">  _SetElementsToLoader(Globals::env_, Globals::classLoader_, v11);</span><br></pre></td></tr></table></figure>
+
+<h3 id="SetElementsToLoader"><a href="#SetElementsToLoader" class="headerlink" title="_SetElementsToLoader"></a>_<code>SetElementsToLoader</code></h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">__int64 __fastcall __SetElementsToLoader(__int64 a1, __int64 a2, __int64 a3)      <span class="comment">//Globals::env_ ,Globals::classLoader_ ,v6+v8</span></span><br><span class="line">&#123;</span><br><span class="line">  v3 = a3;</span><br><span class="line">  v4 = a1;</span><br><span class="line">  v5 = FindClass(Globals::env_,<span class="string">"dalvik/system/BaseDexClassLoader"</span>);</span><br><span class="line">  v6 = v5;</span><br><span class="line">  v7 = GetFieldID(Globals::env_,v5,<span class="string">"pathList"</span>,<span class="string">"Ldalvik/system/DexPathList;"</span>);</span><br><span class="line">  v8 = GetObjectField(Globals::env_, Globals::classLoader_, v7);</span><br><span class="line">  v9 = FindClass(Globals::env_, <span class="string">"dalvik/system/DexPathList"</span>);</span><br><span class="line">  v10 = v9;</span><br><span class="line">  v11 = GetFieldID(Globals::env_,v9,<span class="string">"dexElements"</span>,<span class="string">"[Ldalvik/system/DexPathList$Element;"</span>);</span><br><span class="line">  result = SetObjectField(Globals::env_, v8, v11, v3);</span><br><span class="line">  <span class="keyword">if</span> ( v10 )</span><br><span class="line">    result = DeleteLocalRef(v4, v10);</span><br><span class="line">  <span class="keyword">if</span> ( v8 )</span><br><span class="line">    result = DeleteLocalRef(v4, v8);</span><br><span class="line">  <span class="keyword">if</span> ( v6 )</span><br><span class="line">    result = DeleteLocalRef(v4, v6);</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>SetObjectField</code>即将<code>classloader</code>中的<code>pathList</code>成员变量中的成员变量<code>dexElements</code>设置为v6+v8</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>　　 一个<code>ClassLoader</code>可以包含多个dex文件，每个dex文件是一个<code>Element</code>，多个dex文件排列成一个有序的数组<code>dexElements</code>数组，当找类的时候，会按顺序遍历dex文件，然后从当前遍历的dex文件中找类，如果找类则返回，如果找不到从下一个dex文件继续查找 .</p>
+<p>　　通过反射获取<code>DexClassLoader</code>中的<code>DexPathList</code>中的Element数组,调用<code>MakeInMemoryDexElements</code>函数来生成<code>A3AEECD8.dex</code>的<code>Element</code>对象,然后将<code>A3AEECD8.dex</code>的<code>Element</code>对象合并进入<code>classloader</code>中的<code>Element[]</code>.</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p><a href="https://blog.csdn.net/mingyunxiaohai/article/details/86677509" target="_blank" rel="noopener">ClassLoader</a></p>
+<p><a href="https://www.androidos.net.cn/android/9.0.0_r8/xref/libcore/dalvik/src/main/java/dalvik/system/DexPathList.java" target="_blank" rel="noopener">Dexpathlist.java</a></p>
+<p><a href="https://blog.csdn.net/hp910315/article/details/51681710" target="_blank" rel="noopener">MultiDex与热修复实现原理</a></p>
+<p><a href="https://www.jianshu.com/p/c8cd452f5eed" target="_blank" rel="noopener">Dex热修复原理</a></p>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+  
+
+
+
+
+
+
+    </main>
+
+    <footer class="site-footer">
+  <p class="site-info">
+    Proudly powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and
+    Theme by <a href="https://github.com/CodeDaraW/Hacker" target="_blank">Hacker</a>
+    </br>
+    
+    &copy; 2020 DW Jia
+    
+  </p>
+</footer>
+    
+  </div>
+</div>
+</body>
+</html>
