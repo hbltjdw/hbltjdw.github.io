@@ -59,6 +59,190 @@
 
   
     
+    <h3 class="article-title"><a href="/2020/01/27/Native函数调用/"><span>Native函数调用</span></a></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2020/01/27/Native函数调用/" rel="bookmark">
+        <time class="entry-date published" datetime="2020-01-27T15:14:21.000Z">
+          2020-01-27
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <h2 id="注册JNI函数"><a href="#注册JNI函数" class="headerlink" title="注册JNI函数"></a>注册JNI函数</h2><ul>
+<li><p>静态注册</p>
+<p>先由Java得到本地方法的声明，然后再通过JNI实现该声明方法</p>
+</li>
+<li><p>动态注册</p>
+<p>先通过JNI重载<code>JNI_OnLoad()</code>实现本地方法，然后直接在Java中调用本地方法。</p>
+</li>
+</ul>
+<h3 id="静态注册"><a href="#静态注册" class="headerlink" title="静态注册"></a>静态注册</h3><p>​        静态注册就是根据函数名来遍历Java和JNI函数之间的关联，而且要求JNI层函数的名字必须遵循特定的格式。具体的实现很简单，首先在Java代码中声明native函数，然后通过javah来生成native函数的具体形式，接下来在JNI代码中实现这些函数即可。</p>
+<p>大致流程:</p>
+<ol>
+<li>先创建Java类，声明Native方法，编译成.class文件</li>
+<li>使用<code>Javah</code>命令生成C/C++的头文件</li>
+<li>创建.h对应的源文件，然后实现对应的native方法</li>
+</ol>
+<p>JNI方法名的规范:*<em>返回值 + Java前缀+全路径类名+方法名+参数1JNIEnv+参数2jobject+其他参数 *</em></p>
+<h3 id="动态注册"><a href="#动态注册" class="headerlink" title="动态注册"></a>动态注册</h3><p>动态注册，也就是通过<code>RegisterNatives</code>方法把C/C++中的方法映射到Java中的native方法，而无需遵循特定的方法命名格式。</p>
+<p>举例说明，首先是加载so库</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">JniDemo1</span></span>&#123;</span><br><span class="line">       <span class="keyword">static</span> &#123;</span><br><span class="line">             System.loadLibrary(<span class="string">"samplelib_jni"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在jni中的实现</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">jint <span class="title">JNI_OnLoad</span><span class="params">(JavaVM* vm, <span class="keyword">void</span>* reserved)</span></span></span><br></pre></td></tr></table></figure>
+
+<p>并且在这个函数里面去动态的注册native方法，完整的参考代码如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;jni.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"Log4Android.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> __cplusplus</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">"C"</span> &#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">char</span> *className = <span class="string">"com/gebilaolitou/jnidemo/JNIDemo2"</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">sayHello</span><span class="params">(JNIEnv *env, jobject, jlong handle)</span> </span>&#123;</span><br><span class="line">    LOGI(<span class="string">"JNI"</span>, <span class="string">"native: say hello ###"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> JNINativeMethod gJni_Methods_table[] = &#123;</span><br><span class="line">    &#123;<span class="string">"sayHello"</span>, <span class="string">"(J)V"</span>, (<span class="keyword">void</span>*)sayHello&#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">jniRegisterNativeMethods</span><span class="params">(JNIEnv* env, <span class="keyword">const</span> <span class="keyword">char</span>* className,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> JNINativeMethod* gMethods, <span class="keyword">int</span> numMethods)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    jclass clazz;</span><br><span class="line"></span><br><span class="line">    LOGI(<span class="string">"JNI"</span>,<span class="string">"Registering %s natives\n"</span>, className);</span><br><span class="line">    clazz = (env)-&gt;FindClass( className);</span><br><span class="line">    <span class="keyword">if</span> (clazz == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        LOGE(<span class="string">"JNI"</span>,<span class="string">"Native registration unable to find class '%s'\n"</span>, className);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> result = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> ((env)-&gt;RegisterNatives(clazz, gJni_Methods_table, numMethods) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        LOGE(<span class="string">"JNI"</span>,<span class="string">"RegisterNatives failed for '%s'\n"</span>, className);</span><br><span class="line">        result = <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    (env)-&gt;DeleteLocalRef(clazz);</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">jint <span class="title">JNI_OnLoad</span><span class="params">(JavaVM* vm, <span class="keyword">void</span>* reserved)</span></span>&#123;</span><br><span class="line">    LOGI(<span class="string">"JNI"</span>, <span class="string">"enter jni_onload"</span>);</span><br><span class="line"></span><br><span class="line">    JNIEnv* env = <span class="literal">NULL</span>;</span><br><span class="line">    jint result = <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (vm-&gt;GetEnv((<span class="keyword">void</span>**) &amp;env, JNI_VERSION_1_4) != JNI_OK) &#123;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    jniRegisterNativeMethods(env, className, gJni_Methods_table, <span class="keyword">sizeof</span>(gJni_Methods_table) / <span class="keyword">sizeof</span>(JNINativeMethod));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> JNI_VERSION_1_4;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​        然后就调用了<code>jniRegisterNativeMethods</code>函数来实现注册，这里面注意一个静态变量<code>gJni_Methods_table</code>。JNI允许我们提供一个函数映射表，注册给Java虚拟机，这样JVM就可以用函数映射表来调用相应的函数。这样就可以不必通过函数名来查找需要调用的函数了。Java与JNI通过<code>JNINativeMethod</code>的结构来建立联系，它被定义在<code>jni.h</code>中，其结构内容如下：。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>* name;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>* signature;</span><br><span class="line">    <span class="keyword">void</span>*       fnPtr;</span><br><span class="line">&#125; JNINativeMethod;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<ul>
+<li>第一个变量<code>name</code>，代表的是Java中的<strong>函数名</strong></li>
+<li>第二个变量<code>signature</code>，代表的是Java中的<strong>参数和返回值</strong></li>
+<li>第三个变量<code>fnPtr</code>，代表的是的<strong>指向C函数的函数指针</strong></li>
+</ul>
+</blockquote>
+<p>下面我们再来看下<code>jniRegisterNativeMethods</code>函数内部的实现</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">jniRegisterNativeMethods</span><span class="params">(JNIEnv* env, <span class="keyword">const</span> <span class="keyword">char</span>* className,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> JNINativeMethod* gMethods, <span class="keyword">int</span> numMethods)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    jclass clazz;</span><br><span class="line"></span><br><span class="line">    LOGI(<span class="string">"JNI"</span>,<span class="string">"Registering %s natives\n"</span>, className);</span><br><span class="line">    clazz = (env)-&gt;FindClass( className);</span><br><span class="line">    <span class="keyword">if</span> (clazz == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        LOGE(<span class="string">"JNI"</span>,<span class="string">"Native registration unable to find class '%s'\n"</span>, className);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> result = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> ((env)-&gt;RegisterNatives(clazz, gJni_Methods_table, numMethods) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        LOGE(<span class="string">"JNI"</span>,<span class="string">"RegisterNatives failed for '%s'\n"</span>, className);</span><br><span class="line">        result = <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    (env)-&gt;DeleteLocalRef(clazz);</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先通过<code>clazz = (env)-&gt;FindClass( className);</code>找到声明native方法的类<br> 然后通过调用<code>RegisterNatives函数</code>将注册函数的Java类，以及注册函数的数组，以及个数注册在一起，这样就实现了绑定。它的作用就是将Method的nativeFunc指向<code>dvmCallJNIMethod</code>，当java层调用native函数的时候会进入这个函数。而真正的native函数指针则存储在<code>Method-&gt;insns</code>中。</p>
+<h2 id="Native函数调用逻辑"><a href="#Native函数调用逻辑" class="headerlink" title="Native函数调用逻辑"></a>Native函数调用逻辑</h2><h4 id="动态注册方法"><a href="#动态注册方法" class="headerlink" title="动态注册方法"></a>动态注册方法</h4><p>​        Dalvik在执行动态注册的JNI方法时，通过bridge函数<code>dvmCallJNIMethod</code>来完成，因为这个Method对象的nativeFunc指向的就是dvmCallJNIMethod。</p>
+<h4 id="静态注册方法"><a href="#静态注册方法" class="headerlink" title="静态注册方法"></a>静态注册方法</h4><p>​        对于静态注册JNI方法，Dalvik在加载类时会将对应的Method对象的nativeFunc成员设置为dvmResolveNativeMethod函数地址。那么在执行该JNI方法时，就会首先执行dvmResolveNativeMethod.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dvmResolveNativeMethod</span><span class="params">(<span class="keyword">const</span> u4* args, JValue* pResult,</span></span></span><br><span class="line"><span class="function"><span class="params">   <span class="keyword">const</span> Method* method, Thread* self)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   ClassObject* clazz = method-&gt;clazz;</span><br><span class="line"></span><br><span class="line">   <span class="comment">/*</span></span><br><span class="line"><span class="comment">    * If this is a static method, it could be called before the class</span></span><br><span class="line"><span class="comment">    * has been initialized.</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">   <span class="keyword">if</span> (dvmIsStaticMethod(method)) &#123;</span><br><span class="line">       <span class="keyword">if</span> (!dvmIsClassInitialized(clazz) &amp;&amp; !dvmInitClass(clazz)) &#123;</span><br><span class="line">           assert(dvmCheckException(dvmThreadSelf()));</span><br><span class="line">           <span class="keyword">return</span>;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">       assert(dvmIsClassInitialized(clazz) ||</span><br><span class="line">              dvmIsClassInitializing(clazz));</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">/* start with our internal-native methods */</span></span><br><span class="line">   DalvikNativeFunc infunc = dvmLookupInternalNativeMethod(method);</span><br><span class="line">   <span class="keyword">if</span> (infunc != <span class="literal">NULL</span>) &#123;</span><br><span class="line">       <span class="comment">/* resolution always gets the same answer, so no race here */</span></span><br><span class="line">       IF_LOGVV() &#123;</span><br><span class="line">           <span class="keyword">char</span>* desc = dexProtoCopyMethodDescriptor(&amp;method-&gt;prototype);</span><br><span class="line">           LOGVV(<span class="string">"+++ resolved native %s.%s %s, invoking"</span>,</span><br><span class="line">               clazz-&gt;descriptor, method-&gt;name, desc);</span><br><span class="line">           <span class="built_in">free</span>(desc);</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">if</span> (dvmIsSynchronizedMethod(method)) &#123;</span><br><span class="line">           ALOGE(<span class="string">"ERROR: internal-native can't be declared 'synchronized'"</span>);</span><br><span class="line">           ALOGE(<span class="string">"Failing on %s.%s"</span>, method-&gt;clazz-&gt;descriptor, method-&gt;name);</span><br><span class="line">           dvmAbort();     <span class="comment">// harsh, but this is VM-internal problem</span></span><br><span class="line">       &#125;</span><br><span class="line">       DalvikBridgeFunc dfunc = (DalvikBridgeFunc) infunc;</span><br><span class="line">       dvmSetNativeFunc((Method*) method, dfunc, <span class="literal">NULL</span>);</span><br><span class="line">       dfunc(args, pResult, method, self);</span><br><span class="line">       <span class="keyword">return</span>;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">/* now scan any DLLs we have loaded for JNI signatures */</span></span><br><span class="line">   <span class="keyword">void</span>* func = lookupSharedLibMethod(method);</span><br><span class="line">   <span class="keyword">if</span> (func != <span class="literal">NULL</span>) &#123;</span><br><span class="line">       <span class="comment">/* found it, point it at the JNI bridge and then call it */</span></span><br><span class="line">       dvmUseJNIBridge((Method*) method, func);</span><br><span class="line">       (*method-&gt;nativeFunc)(args, pResult, method, self);</span><br><span class="line">       <span class="keyword">return</span>;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   IF_ALOGW() &#123;</span><br><span class="line">       <span class="keyword">char</span>* desc = dexProtoCopyMethodDescriptor(&amp;method-&gt;prototype);</span><br><span class="line">       ALOGW(<span class="string">"No implementation found for native %s.%s:%s"</span>,</span><br><span class="line">           clazz-&gt;descriptor, method-&gt;name, desc);</span><br><span class="line">       <span class="built_in">free</span>(desc);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   dvmThrowUnsatisfiedLinkError(<span class="string">"Native method not found"</span>, method);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>​        <code>dvmResolveNativeMethod</code>先遍历查找dalvik虚拟机内部的方法,如果没有找到,继续查找所有已加载的so，找到JNI函数地址后，再调用<code>dvmUseJNIBridge</code>函数设置Method的nativeFunc和insns成员，最后再调用<code>method-&gt;nativeFunc</code>，所以还是先调用<code>dvmCallJNIMethod</code>，再由<code>dvmCallJNIMethod</code>执行相应的JNI方法。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><img src="/2020/01/27/Native%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8/%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%B5%81%E7%A8%8B.png" alt="函数调用"></p>
+<p>​        在Android中，不管是java方法还是java native方法，它在虚拟机中对应的都是一个Method对象，如果这个方法是一个java native方法的话，那么Method对象的nativeFunc会指向一个bridge函数，这个函数为dvmCallJNIMethod，当我们在调用java native函数的时候就会进入这个bridge函数，bridge函数的作用就是调用该java native方法对应的JNI方法。所以，我们可以这么理解，所有java native函数的执行都是通过一个名为dvmCallJNIMethod的bridge函数来实现对应JNI方法的调用的。主动注册与静态注册的区别就是，主动注册需要告诉JNI，Java方法和C函数的映射，而静态注册则按照对应的规则去查找。最后在调用逻辑上，完全一致。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p><a href="https://www.jianshu.com/p/b71aeb4ed13d" target="_blank" rel="noopener">Android JNI学习(三)——Java与Native相互调用</a></p>
+<p><a href="https://blog.csdn.net/github_37130188/article/details/89857205" target="_blank" rel="noopener">如何在jni中注册native函数，有几种注册方式?</a></p>
+<p><a href="https://www.jianshu.com/p/7328c9c5436c" target="_blank" rel="noopener">Dalvik 虚拟机的 dvmCallJNIMethod 方法</a></p>
+<p><a href="https://blog.csdn.net/hp910315/article/details/79273950" target="_blank" rel="noopener">Dalvik虚拟机中Java native方法的调用过程</a></p>
+<p><a href="https://www.jianshu.com/p/1ef556aec1cd" target="_blank" rel="noopener">JNI实现源码分析【四 函数调用】</a></p>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+
+
+  <article>
+
+  
+    
+    <h3 class="article-title"><a href="/2020/01/26/JIT与AOT编译模式/"><span>JIT与AOT编译模式</span></a></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2020/01/26/JIT与AOT编译模式/" rel="bookmark">
+        <time class="entry-date published" datetime="2020-01-26T14:33:06.000Z">
+          2020-01-26
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <p> JIT，即Just-in-time,动态(即时)编译，边运行边编译；</p>
+<p>AOT，Ahead Of Time，指运行前编译，是两种程序的编译方式 </p>
+<h3 id="JIT"><a href="#JIT" class="headerlink" title="JIT"></a>JIT</h3><p>​         JIT，即“Just In Time”，翻译过来就是“即时编译技术”。android在2.2版本引入此技术，主要是用来提高程序的执行效率的。 对于会多次执行到的代码（比如某个类的函数、某一个经常使用到的执行路径相关的代码，就是所谓的“热点函数”、“热点trace”），JIT会将其编译成机器码。下次再执行此代码时就直接执行机器码，从而提高了代码的执行效率。</p>
+<p>  为什么只是对热点函数、热点trace进行JIT编译，而不是全部的字节码？首先，字节码的大部分代码一般不会总是执行到（即执行频率低），而JIT是在程序运行期间编译，编译时又需要时间，在程序运行期间花时间编译一般不会执行到的代码，这不是一个好的选择。所以，JIT只编译热点函数、热点trace，对于非热点的代码仍旧在用到时用解释器去解释成机器码然后执行就可以了。 JIT编译而来的机器码是存储到内存中的，不是在硬盘上。所以，在应用重新启动时，所有的热点代码也都需要使用jit重新编译成机器码。 </p>
+<p>     网上找到一段关于JIT在代码层面实现逻辑的说明，“每启动一个应用程序，都会相应地启动一个dalvik虚拟机，启动时会建立JIT线程，一直在后台运行。当某段代码被调用时，虚拟机会判断它是否需要编译成机器码，如果需要，就做一个标记，JIT线程不断判断此标记，如果发现被设定就把它编译成机器码，并将其机器码地址及相关信息放入entry table中，下次执行到此就跳到机器码段执行，而不再解释执行，从而提高速度”。</p>
+<p>​         JIT是Dalvik虚拟机下的编译模式，随着ART在4.4版本之后替代Dalvik，编译模式也由JIT变为了AOT</p>
+<ul>
+<li><p>Dalvik从android诞生时就存在，4.4版本之后被ART替代</p>
+</li>
+<li><p>JIT在android 2.2版本被引入，4.4版本之后被AOT替代</p>
+</li>
+<li><p>JIT只是对热点函数、热点trace进行编译，非热点函数还是走解释器</p>
+</li>
+<li><p>JIT编译生成的机器码存储在内存中，应用下次启动时需重新编译热点代码</p>
+</li>
+</ul>
+<h3 id="AOT"><a href="#AOT" class="headerlink" title="AOT"></a>AOT</h3><p>​        ART采取了AOT(Ahead-Of-Time)技术， 因为它是在应用安装时就将字节码编译成了机器码然后存放在本地（可以理解为“硬盘”）了。这样程序运行时就可以直接从本地取到机器码然后执行，大大提高了代码的执行效率。 在APK安装的时候就会做预先编译动作，编译好的文件是OAT文件，该文件本质上是一个ELF文件，这里与dex(Odex)文件最大的区别是OAT文件不再是字节码文件，而是一个可执行文件，可以更底层的与硬件接触，运行时也省去了预编译和转译的时间。</p>
+<p>​        AOT作为默认的编译模式，也只是在android 5.x、6.x版本，7.0版本开始使用混合模式。 </p>
+<ul>
+<li><p>AOT，是在应用安装时编译，优点是省去了在程序运行期间的编译时间，提高了代码的执行效率</p>
+</li>
+<li><p>AOT，也印在应用安装时编译，延长了应用的安装时间，增大了本地存储空间的占用</p>
+</li>
+<li><p>AOT作为默认编译模式，只存在于android 5.x、6.x版本</p>
+</li>
+</ul>
+<h3 id="android-7-0及之后的编译模式是怎样的？"><a href="#android-7-0及之后的编译模式是怎样的？" class="headerlink" title="android 7.0及之后的编译模式是怎样的？"></a>android 7.0及之后的编译模式是怎样的？</h3><p>​        7.0版本采用的是hybird的模式，也就是JIT+AOT+解释器的结合。应用安装时不再编译，直接安装。代码执行时采用JIT的方式，对于热点trace和热点代码进行编译并产生profile文件，但这种JIT产生的编译不是持久化的。当手机进入空置或者充电状态时，系统隔一段时间就扫描一下app的profile文件，基于此profile文件制定的热点trace或者热点代码进行编译并进行持久化处理。待应用再次运行时，如本地有相关机器码，就直接运行本地的机器码而不再进行JIT编译。</p>
+<p>  此处的AOT，不再指“Ahead Of Time”，而是指“All Of the Time”。</p>
+<p>  这种混合模式的好处是，因为不再进行安装时编译，安装会变得很快；在空置或充电等状态下进行了编译，编译过的热点代码或热点trace不会再进行重复编译，执行效率也会提升。缺点是，应用前几次代码执行，效率可能一般；用户操作应用的次数越多，这种代码执行的效率越明显。</p>
+<h3 id="Dalvik"><a href="#Dalvik" class="headerlink" title="Dalvik"></a>Dalvik</h3><p>Dalvik使用JIT</p>
+<ol>
+<li>使用.dex字节码，是针对Android设备优化后的DVM所使用的运行时编译字节码</li>
+<li>.odex是对dex的优化，deodex在系统第一次开机时会提取所有apk内的dex文件，odex优化将dex提前提取出，加快了开机的速度和程序运行的速度</li>
+</ol>
+<h2 id="ART"><a href="#ART" class="headerlink" title="ART"></a>ART</h2><ul>
+<li>ART 使用AOT</li>
+<li>在安装apk时会进行预编译，生成OAT文件，仍以.odex保存，但是与Dalvik下不同，这个文件是可执行文件</li>
+<li>dex、odex 均可通过dex2oat生成oat文件，以实现兼容性</li>
+<li>在大型应用安装时需要更多时间和空间</li>
+</ul>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+
+
+  <article>
+
+  
+    
     <h3 class="article-title"><a href="/2020/01/07/dex加载流程/"><span>dex加载流程</span></a></h3>
     
   
@@ -572,140 +756,6 @@
 <p>　　在Android studio编译APK时,会将AndroidManifest.xml处理后打包进去.打包进去的AndroidManifest.xml被编译为AXML的二进制文件.</p>
 <h2 id="resources-arsc"><a href="#resources-arsc" class="headerlink" title="resources.arsc"></a>resources.arsc</h2><p>　　连接代码与资源的桥梁是R.java,该文件保存的是不同类型的资源的ID值.一个资源包含资源的名称,类型,值以及所在的package,resources.arsc包含不同语言环境中res目录下所有资源的类型,名称与ID所对应的信息.</p>
 <h2 id="META-INF目录"><a href="#META-INF目录" class="headerlink" title="META-INF目录"></a>META-INF目录</h2><p> 　　存放于APK签名有关的信息</p>
-
-      
-    </div>
-
-  </div>
-
-  <div class="article-footer">
-    <div class="article-meta pull-left">
-
-    
-
-    
-
-    </div>
-
-    
-  </div>
-</article>
-
-
-
-  <article>
-
-  
-    
-    <h3 class="article-title"><a href="/2019/11/04/Dalvik可执行格式与字节码规范/"><span>Dalvik可执行格式与字节码规范</span></a></h3>
-    
-  
-
-  <div class="article-top-meta">
-    <span class="posted-on">
-      <a href="/2019/11/04/Dalvik可执行格式与字节码规范/" rel="bookmark">
-        <time class="entry-date published" datetime="2019-11-04T08:38:28.000Z">
-          2019-11-04
-        </time>
-      </a>
-    </span>
-  </div>
-
-
-  
-
-  <div class="article-content">
-    <div class="entry">
-      
-        <p>Android平台使用java语言来开发应用程序,但Android程序并不是运行在标准的java虚拟机上.</p>
-<h2 id="Dalvik虚拟机"><a href="#Dalvik虚拟机" class="headerlink" title="Dalvik虚拟机"></a>Dalvik虚拟机</h2><h3 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h3><ul>
-<li><p>体积小,占用内存小</p>
-</li>
-<li><p>专用dex可执行文件格式,执行速度快</p>
-</li>
-<li><p>常量池采用32位索引值,对类方法名,字段名,常量寻址速度快</p>
-</li>
-<li><p>寄存器架构,拥有一套完整的指令系统</p>
-</li>
-<li><p>所有android程序都运行在Android系统进程中,每个进程都与一个Dalvik虚拟机实例对应.</p>
-</li>
-</ul>
-<h3 id="Dalvik虚拟机与java虚拟机的区别"><a href="#Dalvik虚拟机与java虚拟机的区别" class="headerlink" title="Dalvik虚拟机与java虚拟机的区别"></a>Dalvik虚拟机与java虚拟机的区别</h3><ul>
-<li>运行字节码不同,一个java字节码,一个dalvik字节码,dalvik字节码由java字节码转换过来</li>
-<li>Dalvik可执行文件的体积更小</li>
-<li>虚拟机架构不同,java虚拟机是基于栈架构的.dalvik是基于寄存器架构的,访问速度快很多</li>
-</ul>
-<h3 id="虚拟机执行流程"><a href="#虚拟机执行流程" class="headerlink" title="虚拟机执行流程"></a>虚拟机执行流程</h3><p>Android系统由Linux内核,函数库,Android运行时,应用程序框架和应用程序组成.Dalvik属于Android运行时</p>
-<p><img src="/2019/11/04/Dalvik%E5%8F%AF%E6%89%A7%E8%A1%8C%E6%A0%BC%E5%BC%8F%E4%B8%8E%E5%AD%97%E8%8A%82%E7%A0%81%E8%A7%84%E8%8C%83/android%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84.jpg" alt="Android架构"></p>
-<p>​        Android系统启动并加载内核后,会立即执行init进程.init进程先完成设备的初始化工作,再读取init.rc文件并启动系统中重要的外部程序Zygote.</p>
-<p>​        Zygote是Android系统中所有进程的孵化器进程.Zygote启动后,会先初始化Dalvik虚拟机,再启动system_server进程并进入Zygote模式.在执行一个Android应用程序时,system_server进程通过Binder IPC方式将命令发送给Zygote.Zygote收到命令后,通过fork自身创建一个Dalvik虚拟机的实例来执行应用程序的入口函数.从而完成程序的启动过程.</p>
-<p>​        进程fork后,执行工作交给Dalvik虚拟机来完成.</p>
-<h3 id="虚拟机的执行方式"><a href="#虚拟机的执行方式" class="headerlink" title="虚拟机的执行方式"></a>虚拟机的执行方式</h3><p>即时编译(JIT)又称动态编译,是通过在运行时将字节码翻译为机器码使得程序的执行速度加快的技术.</p>
-<p>主流JIT包括两种字节码编译方式</p>
-<ul>
-<li>method方式:以方法为单位进行编译</li>
-<li>trace方式:以trace为单位进行编译</li>
-</ul>
-<p>Dalvik虚拟机默认采用trace的方式编译代码</p>
-<h2 id="Dalvik语法基础"><a href="#Dalvik语法基础" class="headerlink" title="Dalvik语法基础"></a>Dalvik语法基础</h2><h3 id="Dalvik寄存器"><a href="#Dalvik寄存器" class="headerlink" title="Dalvik寄存器"></a>Dalvik寄存器</h3><p>v命名法:表示函数所使用的局部变量与参数</p>
-<p>p命名法:函数中引入的参数命名从p0开始</p>
-<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a href="https://www.jianshu.com/p/92c2f732d2d6" target="_blank" rel="noopener">Dalvik虚拟机学习之路</a></p>
-<p><a href="https://www.jianshu.com/p/14147171a599" target="_blank" rel="noopener">Dalvik虚拟机原理</a></p>
-
-      
-    </div>
-
-  </div>
-
-  <div class="article-footer">
-    <div class="article-meta pull-left">
-
-    
-
-    
-
-    </div>
-
-    
-  </div>
-</article>
-
-
-
-  <article>
-
-  
-    
-    <h3 class="article-title"><a href="/2019/10/30/dex格式解析/"><span>dex格式解析</span></a></h3>
-    
-  
-
-  <div class="article-top-meta">
-    <span class="posted-on">
-      <a href="/2019/10/30/dex格式解析/" rel="bookmark">
-        <time class="entry-date published" datetime="2019-10-30T06:14:46.000Z">
-          2019-10-30
-        </time>
-      </a>
-    </span>
-  </div>
-
-
-  
-
-  <div class="article-content">
-    <div class="entry">
-      
-        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>​        我们都知道 .java 源文件经过编译器编译会生成 JVM 可识别的 .class 文件。在 Android 中，不管是 Dalvik 还是 Art，和 JVM 的区别还是很大的。Android 系统并不直接使用 Class 文件，而是将所有的 Class 文件聚合打包成 DEX 文件，DEX 文件相比单个单个的 Class 文件更加紧凑，可以直接在 Android Runtime 下执行。</p>
-<p>​         当java程序编译成class后，还需要使用dx工具将所有的class文件整合到一个dex文件，目的是其中各个类能够共享数据，在一定程度上降低了冗余，同时也是文件结构更加经凑，实验表明，dex文件是传统jar文件大小的50%左右 . dex文件作为Android APK的组成部分，其主要是Android的Java代码经过编译生成class文件，再经过dx命令生成的。这里面包括了APK的源码，反编译时最主要就是对这个文件进行反编译。 </p>
-<p><img src="/2019/10/30/dex%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90/%E5%AE%89%E5%8D%93%E6%96%87%E4%BB%B6.png" alt="android文件"></p>
-<h2 id="dex文件结构"><a href="#dex文件结构" class="headerlink" title="dex文件结构"></a>dex文件结构</h2><p><img src="https://upload-images.jianshu.io/upload_images/2466095-82f7d70102fe33d2" alt="dex文件格式"></p>
-<h2 id="dex文件分析"><a href="#dex文件分析" class="headerlink" title="dex文件分析"></a>dex文件分析</h2><p> dex 文件的分析，主要分为三大块： ① Dex 文件头 ② 各种数据的数组，包括字符串、类型、方法原型、字段、方法 ③ 类数据 ④ 其他 </p>
-<p>使用010 Editor打开dex文件</p>
-<p><img src="/2019/10/30/dex%E6%A0%BC%E5%BC%8F%E8%A7%A3%E6%9E%90/dex%E5%88%86%E6%9E%90.png" alt="010 Editor dex文件分析"></p>
-<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a href="https://www.jianshu.com/p/a4632f566039" target="_blank" rel="noopener">Android逆向笔记 —— DEX 文件格式解析</a></p>
-<p><a href="https://www.jianshu.com/p/b79c729f326b" target="_blank" rel="noopener">Android dex文件解析</a></p>
-<p><a href="https://www.cnblogs.com/ltyandy/p/11603083.html" target="_blank" rel="noopener">Android逆向之Dex文件</a></p>
 
       
     </div>

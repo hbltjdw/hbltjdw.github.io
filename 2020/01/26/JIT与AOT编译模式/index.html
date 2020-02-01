@@ -1,0 +1,170 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>JIT与AOT编译模式 | Hexo</title>
+
+  
+  <meta name="author" content="DW Jia">
+  
+
+  
+  <meta name="description" content="JIT，即Just-in-time,动态(即时)编译，边运行边编译；
+AOT，Ahead Of Time，指运行前编译，是两种程序的编译方式 
+JIT​         JIT，即“Just In Time”，翻译过来就是“即时编译技术”。android在2.2版本引入此技术，主要是用来提高程序的执">
+  
+
+  
+  
+  <meta name="keywords" content="">
+  
+
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+  <meta property="og:title" content="JIT与AOT编译模式"/>
+
+  <meta property="og:site_name" content="Hexo"/>
+
+  
+  <meta property="og:image" content="/favicon.ico"/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+</head>
+
+
+<body>
+<div class="blog">
+  <div class="content">
+
+    <header>
+  <div class="site-branding">
+    <h1 class="site-title">
+      <a href="/">Hexo</a>
+    </h1>
+    <p class="site-description"></p>
+  </div>
+  <nav class="site-navigation">
+    <ul>
+      
+        <li><a href="/">主页</a></li>
+      
+        <li><a href="/archives">归档</a></li>
+      
+    </ul>
+  </nav>
+</header>
+
+    <main class="site-main posts-loop">
+    <article>
+
+  
+    
+    <h3 class="article-title"><span>JIT与AOT编译模式</span></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2020/01/26/JIT与AOT编译模式/" rel="bookmark">
+        <time class="entry-date published" datetime="2020-01-26T14:33:06.000Z">
+          2020-01-26
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <p> JIT，即Just-in-time,动态(即时)编译，边运行边编译；</p>
+<p>AOT，Ahead Of Time，指运行前编译，是两种程序的编译方式 </p>
+<h3 id="JIT"><a href="#JIT" class="headerlink" title="JIT"></a>JIT</h3><p>​         JIT，即“Just In Time”，翻译过来就是“即时编译技术”。android在2.2版本引入此技术，主要是用来提高程序的执行效率的。 对于会多次执行到的代码（比如某个类的函数、某一个经常使用到的执行路径相关的代码，就是所谓的“热点函数”、“热点trace”），JIT会将其编译成机器码。下次再执行此代码时就直接执行机器码，从而提高了代码的执行效率。</p>
+<p>  为什么只是对热点函数、热点trace进行JIT编译，而不是全部的字节码？首先，字节码的大部分代码一般不会总是执行到（即执行频率低），而JIT是在程序运行期间编译，编译时又需要时间，在程序运行期间花时间编译一般不会执行到的代码，这不是一个好的选择。所以，JIT只编译热点函数、热点trace，对于非热点的代码仍旧在用到时用解释器去解释成机器码然后执行就可以了。 JIT编译而来的机器码是存储到内存中的，不是在硬盘上。所以，在应用重新启动时，所有的热点代码也都需要使用jit重新编译成机器码。 </p>
+<p>     网上找到一段关于JIT在代码层面实现逻辑的说明，“每启动一个应用程序，都会相应地启动一个dalvik虚拟机，启动时会建立JIT线程，一直在后台运行。当某段代码被调用时，虚拟机会判断它是否需要编译成机器码，如果需要，就做一个标记，JIT线程不断判断此标记，如果发现被设定就把它编译成机器码，并将其机器码地址及相关信息放入entry table中，下次执行到此就跳到机器码段执行，而不再解释执行，从而提高速度”。</p>
+<p>​         JIT是Dalvik虚拟机下的编译模式，随着ART在4.4版本之后替代Dalvik，编译模式也由JIT变为了AOT</p>
+<ul>
+<li><p>Dalvik从android诞生时就存在，4.4版本之后被ART替代</p>
+</li>
+<li><p>JIT在android 2.2版本被引入，4.4版本之后被AOT替代</p>
+</li>
+<li><p>JIT只是对热点函数、热点trace进行编译，非热点函数还是走解释器</p>
+</li>
+<li><p>JIT编译生成的机器码存储在内存中，应用下次启动时需重新编译热点代码</p>
+</li>
+</ul>
+<h3 id="AOT"><a href="#AOT" class="headerlink" title="AOT"></a>AOT</h3><p>​        ART采取了AOT(Ahead-Of-Time)技术， 因为它是在应用安装时就将字节码编译成了机器码然后存放在本地（可以理解为“硬盘”）了。这样程序运行时就可以直接从本地取到机器码然后执行，大大提高了代码的执行效率。 在APK安装的时候就会做预先编译动作，编译好的文件是OAT文件，该文件本质上是一个ELF文件，这里与dex(Odex)文件最大的区别是OAT文件不再是字节码文件，而是一个可执行文件，可以更底层的与硬件接触，运行时也省去了预编译和转译的时间。</p>
+<p>​        AOT作为默认的编译模式，也只是在android 5.x、6.x版本，7.0版本开始使用混合模式。 </p>
+<ul>
+<li><p>AOT，是在应用安装时编译，优点是省去了在程序运行期间的编译时间，提高了代码的执行效率</p>
+</li>
+<li><p>AOT，也印在应用安装时编译，延长了应用的安装时间，增大了本地存储空间的占用</p>
+</li>
+<li><p>AOT作为默认编译模式，只存在于android 5.x、6.x版本</p>
+</li>
+</ul>
+<h3 id="android-7-0及之后的编译模式是怎样的？"><a href="#android-7-0及之后的编译模式是怎样的？" class="headerlink" title="android 7.0及之后的编译模式是怎样的？"></a>android 7.0及之后的编译模式是怎样的？</h3><p>​        7.0版本采用的是hybird的模式，也就是JIT+AOT+解释器的结合。应用安装时不再编译，直接安装。代码执行时采用JIT的方式，对于热点trace和热点代码进行编译并产生profile文件，但这种JIT产生的编译不是持久化的。当手机进入空置或者充电状态时，系统隔一段时间就扫描一下app的profile文件，基于此profile文件制定的热点trace或者热点代码进行编译并进行持久化处理。待应用再次运行时，如本地有相关机器码，就直接运行本地的机器码而不再进行JIT编译。</p>
+<p>  此处的AOT，不再指“Ahead Of Time”，而是指“All Of the Time”。</p>
+<p>  这种混合模式的好处是，因为不再进行安装时编译，安装会变得很快；在空置或充电等状态下进行了编译，编译过的热点代码或热点trace不会再进行重复编译，执行效率也会提升。缺点是，应用前几次代码执行，效率可能一般；用户操作应用的次数越多，这种代码执行的效率越明显。</p>
+<h3 id="Dalvik"><a href="#Dalvik" class="headerlink" title="Dalvik"></a>Dalvik</h3><p>Dalvik使用JIT</p>
+<ol>
+<li>使用.dex字节码，是针对Android设备优化后的DVM所使用的运行时编译字节码</li>
+<li>.odex是对dex的优化，deodex在系统第一次开机时会提取所有apk内的dex文件，odex优化将dex提前提取出，加快了开机的速度和程序运行的速度</li>
+</ol>
+<h2 id="ART"><a href="#ART" class="headerlink" title="ART"></a>ART</h2><ul>
+<li>ART 使用AOT</li>
+<li>在安装apk时会进行预编译，生成OAT文件，仍以.odex保存，但是与Dalvik下不同，这个文件是可执行文件</li>
+<li>dex、odex 均可通过dex2oat生成oat文件，以实现兼容性</li>
+<li>在大型应用安装时需要更多时间和空间</li>
+</ul>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+  
+
+
+
+
+
+
+    </main>
+
+    <footer class="site-footer">
+  <p class="site-info">
+    Proudly powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and
+    Theme by <a href="https://github.com/CodeDaraW/Hacker" target="_blank">Hacker</a>
+    </br>
+    
+    &copy; 2020 DW Jia
+    
+  </p>
+</footer>
+    
+  </div>
+</div>
+</body>
+</html>

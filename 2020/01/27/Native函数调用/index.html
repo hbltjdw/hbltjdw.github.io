@@ -1,0 +1,190 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Native函数调用 | Hexo</title>
+
+  
+  <meta name="author" content="DW Jia">
+  
+
+  
+  <meta name="description" content="注册JNI函数
+静态注册
+先由Java得到本地方法的声明，然后再通过JNI实现该声明方法
+
+动态注册
+先通过JNI重载JNI_OnLoad()实现本地方法，然后直接在Java中调用本地方法。
+
+
+静态注册​        静态注册就是根据函数名来遍历Java和JNI函数之间的关联，而且要求JNI层函">
+  
+
+  
+  
+  <meta name="keywords" content="">
+  
+
+  <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+  <meta property="og:title" content="Native函数调用"/>
+
+  <meta property="og:site_name" content="Hexo"/>
+
+  
+  <meta property="og:image" content="/favicon.ico"/>
+  
+
+  <link href="/favicon.ico" rel="icon">
+  <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+</head>
+
+
+<body>
+<div class="blog">
+  <div class="content">
+
+    <header>
+  <div class="site-branding">
+    <h1 class="site-title">
+      <a href="/">Hexo</a>
+    </h1>
+    <p class="site-description"></p>
+  </div>
+  <nav class="site-navigation">
+    <ul>
+      
+        <li><a href="/">主页</a></li>
+      
+        <li><a href="/archives">归档</a></li>
+      
+    </ul>
+  </nav>
+</header>
+
+    <main class="site-main posts-loop">
+    <article>
+
+  
+    
+    <h3 class="article-title"><span>Native函数调用</span></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2020/01/27/Native函数调用/" rel="bookmark">
+        <time class="entry-date published" datetime="2020-01-27T15:14:21.000Z">
+          2020-01-27
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <h2 id="注册JNI函数"><a href="#注册JNI函数" class="headerlink" title="注册JNI函数"></a>注册JNI函数</h2><ul>
+<li><p>静态注册</p>
+<p>先由Java得到本地方法的声明，然后再通过JNI实现该声明方法</p>
+</li>
+<li><p>动态注册</p>
+<p>先通过JNI重载<code>JNI_OnLoad()</code>实现本地方法，然后直接在Java中调用本地方法。</p>
+</li>
+</ul>
+<h3 id="静态注册"><a href="#静态注册" class="headerlink" title="静态注册"></a>静态注册</h3><p>​        静态注册就是根据函数名来遍历Java和JNI函数之间的关联，而且要求JNI层函数的名字必须遵循特定的格式。具体的实现很简单，首先在Java代码中声明native函数，然后通过javah来生成native函数的具体形式，接下来在JNI代码中实现这些函数即可。</p>
+<p>大致流程:</p>
+<ol>
+<li>先创建Java类，声明Native方法，编译成.class文件</li>
+<li>使用<code>Javah</code>命令生成C/C++的头文件</li>
+<li>创建.h对应的源文件，然后实现对应的native方法</li>
+</ol>
+<p>JNI方法名的规范:*<em>返回值 + Java前缀+全路径类名+方法名+参数1JNIEnv+参数2jobject+其他参数 *</em></p>
+<h3 id="动态注册"><a href="#动态注册" class="headerlink" title="动态注册"></a>动态注册</h3><p>动态注册，也就是通过<code>RegisterNatives</code>方法把C/C++中的方法映射到Java中的native方法，而无需遵循特定的方法命名格式。</p>
+<p>举例说明，首先是加载so库</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">JniDemo1</span></span>&#123;</span><br><span class="line">       <span class="keyword">static</span> &#123;</span><br><span class="line">             System.loadLibrary(<span class="string">"samplelib_jni"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在jni中的实现</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">jint <span class="title">JNI_OnLoad</span><span class="params">(JavaVM* vm, <span class="keyword">void</span>* reserved)</span></span></span><br></pre></td></tr></table></figure>
+
+<p>并且在这个函数里面去动态的注册native方法，完整的参考代码如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;jni.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"Log4Android.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> __cplusplus</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">"C"</span> &#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">char</span> *className = <span class="string">"com/gebilaolitou/jnidemo/JNIDemo2"</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">sayHello</span><span class="params">(JNIEnv *env, jobject, jlong handle)</span> </span>&#123;</span><br><span class="line">    LOGI(<span class="string">"JNI"</span>, <span class="string">"native: say hello ###"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> JNINativeMethod gJni_Methods_table[] = &#123;</span><br><span class="line">    &#123;<span class="string">"sayHello"</span>, <span class="string">"(J)V"</span>, (<span class="keyword">void</span>*)sayHello&#125;,</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">jniRegisterNativeMethods</span><span class="params">(JNIEnv* env, <span class="keyword">const</span> <span class="keyword">char</span>* className,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> JNINativeMethod* gMethods, <span class="keyword">int</span> numMethods)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    jclass clazz;</span><br><span class="line"></span><br><span class="line">    LOGI(<span class="string">"JNI"</span>,<span class="string">"Registering %s natives\n"</span>, className);</span><br><span class="line">    clazz = (env)-&gt;FindClass( className);</span><br><span class="line">    <span class="keyword">if</span> (clazz == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        LOGE(<span class="string">"JNI"</span>,<span class="string">"Native registration unable to find class '%s'\n"</span>, className);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> result = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> ((env)-&gt;RegisterNatives(clazz, gJni_Methods_table, numMethods) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        LOGE(<span class="string">"JNI"</span>,<span class="string">"RegisterNatives failed for '%s'\n"</span>, className);</span><br><span class="line">        result = <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    (env)-&gt;DeleteLocalRef(clazz);</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">jint <span class="title">JNI_OnLoad</span><span class="params">(JavaVM* vm, <span class="keyword">void</span>* reserved)</span></span>&#123;</span><br><span class="line">    LOGI(<span class="string">"JNI"</span>, <span class="string">"enter jni_onload"</span>);</span><br><span class="line"></span><br><span class="line">    JNIEnv* env = <span class="literal">NULL</span>;</span><br><span class="line">    jint result = <span class="number">-1</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (vm-&gt;GetEnv((<span class="keyword">void</span>**) &amp;env, JNI_VERSION_1_4) != JNI_OK) &#123;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    jniRegisterNativeMethods(env, className, gJni_Methods_table, <span class="keyword">sizeof</span>(gJni_Methods_table) / <span class="keyword">sizeof</span>(JNINativeMethod));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> JNI_VERSION_1_4;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​        然后就调用了<code>jniRegisterNativeMethods</code>函数来实现注册，这里面注意一个静态变量<code>gJni_Methods_table</code>。JNI允许我们提供一个函数映射表，注册给Java虚拟机，这样JVM就可以用函数映射表来调用相应的函数。这样就可以不必通过函数名来查找需要调用的函数了。Java与JNI通过<code>JNINativeMethod</code>的结构来建立联系，它被定义在<code>jni.h</code>中，其结构内容如下：。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> &#123;</span></span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>* name;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>* signature;</span><br><span class="line">    <span class="keyword">void</span>*       fnPtr;</span><br><span class="line">&#125; JNINativeMethod;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<ul>
+<li>第一个变量<code>name</code>，代表的是Java中的<strong>函数名</strong></li>
+<li>第二个变量<code>signature</code>，代表的是Java中的<strong>参数和返回值</strong></li>
+<li>第三个变量<code>fnPtr</code>，代表的是的<strong>指向C函数的函数指针</strong></li>
+</ul>
+</blockquote>
+<p>下面我们再来看下<code>jniRegisterNativeMethods</code>函数内部的实现</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">jniRegisterNativeMethods</span><span class="params">(JNIEnv* env, <span class="keyword">const</span> <span class="keyword">char</span>* className,</span></span></span><br><span class="line"><span class="function"><span class="params">    <span class="keyword">const</span> JNINativeMethod* gMethods, <span class="keyword">int</span> numMethods)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    jclass clazz;</span><br><span class="line"></span><br><span class="line">    LOGI(<span class="string">"JNI"</span>,<span class="string">"Registering %s natives\n"</span>, className);</span><br><span class="line">    clazz = (env)-&gt;FindClass( className);</span><br><span class="line">    <span class="keyword">if</span> (clazz == <span class="literal">NULL</span>) &#123;</span><br><span class="line">        LOGE(<span class="string">"JNI"</span>,<span class="string">"Native registration unable to find class '%s'\n"</span>, className);</span><br><span class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> result = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">if</span> ((env)-&gt;RegisterNatives(clazz, gJni_Methods_table, numMethods) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        LOGE(<span class="string">"JNI"</span>,<span class="string">"RegisterNatives failed for '%s'\n"</span>, className);</span><br><span class="line">        result = <span class="number">-1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    (env)-&gt;DeleteLocalRef(clazz);</span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>首先通过<code>clazz = (env)-&gt;FindClass( className);</code>找到声明native方法的类<br> 然后通过调用<code>RegisterNatives函数</code>将注册函数的Java类，以及注册函数的数组，以及个数注册在一起，这样就实现了绑定。它的作用就是将Method的nativeFunc指向<code>dvmCallJNIMethod</code>，当java层调用native函数的时候会进入这个函数。而真正的native函数指针则存储在<code>Method-&gt;insns</code>中。</p>
+<h2 id="Native函数调用逻辑"><a href="#Native函数调用逻辑" class="headerlink" title="Native函数调用逻辑"></a>Native函数调用逻辑</h2><h4 id="动态注册方法"><a href="#动态注册方法" class="headerlink" title="动态注册方法"></a>动态注册方法</h4><p>​        Dalvik在执行动态注册的JNI方法时，通过bridge函数<code>dvmCallJNIMethod</code>来完成，因为这个Method对象的nativeFunc指向的就是dvmCallJNIMethod。</p>
+<h4 id="静态注册方法"><a href="#静态注册方法" class="headerlink" title="静态注册方法"></a>静态注册方法</h4><p>​        对于静态注册JNI方法，Dalvik在加载类时会将对应的Method对象的nativeFunc成员设置为dvmResolveNativeMethod函数地址。那么在执行该JNI方法时，就会首先执行dvmResolveNativeMethod.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dvmResolveNativeMethod</span><span class="params">(<span class="keyword">const</span> u4* args, JValue* pResult,</span></span></span><br><span class="line"><span class="function"><span class="params">   <span class="keyword">const</span> Method* method, Thread* self)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   ClassObject* clazz = method-&gt;clazz;</span><br><span class="line"></span><br><span class="line">   <span class="comment">/*</span></span><br><span class="line"><span class="comment">    * If this is a static method, it could be called before the class</span></span><br><span class="line"><span class="comment">    * has been initialized.</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">   <span class="keyword">if</span> (dvmIsStaticMethod(method)) &#123;</span><br><span class="line">       <span class="keyword">if</span> (!dvmIsClassInitialized(clazz) &amp;&amp; !dvmInitClass(clazz)) &#123;</span><br><span class="line">           assert(dvmCheckException(dvmThreadSelf()));</span><br><span class="line">           <span class="keyword">return</span>;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">       assert(dvmIsClassInitialized(clazz) ||</span><br><span class="line">              dvmIsClassInitializing(clazz));</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">/* start with our internal-native methods */</span></span><br><span class="line">   DalvikNativeFunc infunc = dvmLookupInternalNativeMethod(method);</span><br><span class="line">   <span class="keyword">if</span> (infunc != <span class="literal">NULL</span>) &#123;</span><br><span class="line">       <span class="comment">/* resolution always gets the same answer, so no race here */</span></span><br><span class="line">       IF_LOGVV() &#123;</span><br><span class="line">           <span class="keyword">char</span>* desc = dexProtoCopyMethodDescriptor(&amp;method-&gt;prototype);</span><br><span class="line">           LOGVV(<span class="string">"+++ resolved native %s.%s %s, invoking"</span>,</span><br><span class="line">               clazz-&gt;descriptor, method-&gt;name, desc);</span><br><span class="line">           <span class="built_in">free</span>(desc);</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">if</span> (dvmIsSynchronizedMethod(method)) &#123;</span><br><span class="line">           ALOGE(<span class="string">"ERROR: internal-native can't be declared 'synchronized'"</span>);</span><br><span class="line">           ALOGE(<span class="string">"Failing on %s.%s"</span>, method-&gt;clazz-&gt;descriptor, method-&gt;name);</span><br><span class="line">           dvmAbort();     <span class="comment">// harsh, but this is VM-internal problem</span></span><br><span class="line">       &#125;</span><br><span class="line">       DalvikBridgeFunc dfunc = (DalvikBridgeFunc) infunc;</span><br><span class="line">       dvmSetNativeFunc((Method*) method, dfunc, <span class="literal">NULL</span>);</span><br><span class="line">       dfunc(args, pResult, method, self);</span><br><span class="line">       <span class="keyword">return</span>;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">/* now scan any DLLs we have loaded for JNI signatures */</span></span><br><span class="line">   <span class="keyword">void</span>* func = lookupSharedLibMethod(method);</span><br><span class="line">   <span class="keyword">if</span> (func != <span class="literal">NULL</span>) &#123;</span><br><span class="line">       <span class="comment">/* found it, point it at the JNI bridge and then call it */</span></span><br><span class="line">       dvmUseJNIBridge((Method*) method, func);</span><br><span class="line">       (*method-&gt;nativeFunc)(args, pResult, method, self);</span><br><span class="line">       <span class="keyword">return</span>;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   IF_ALOGW() &#123;</span><br><span class="line">       <span class="keyword">char</span>* desc = dexProtoCopyMethodDescriptor(&amp;method-&gt;prototype);</span><br><span class="line">       ALOGW(<span class="string">"No implementation found for native %s.%s:%s"</span>,</span><br><span class="line">           clazz-&gt;descriptor, method-&gt;name, desc);</span><br><span class="line">       <span class="built_in">free</span>(desc);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   dvmThrowUnsatisfiedLinkError(<span class="string">"Native method not found"</span>, method);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>​        <code>dvmResolveNativeMethod</code>先遍历查找dalvik虚拟机内部的方法,如果没有找到,继续查找所有已加载的so，找到JNI函数地址后，再调用<code>dvmUseJNIBridge</code>函数设置Method的nativeFunc和insns成员，最后再调用<code>method-&gt;nativeFunc</code>，所以还是先调用<code>dvmCallJNIMethod</code>，再由<code>dvmCallJNIMethod</code>执行相应的JNI方法。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p><img src="/2020/01/27/Native%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8/%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%B5%81%E7%A8%8B.png" alt="函数调用"></p>
+<p>​        在Android中，不管是java方法还是java native方法，它在虚拟机中对应的都是一个Method对象，如果这个方法是一个java native方法的话，那么Method对象的nativeFunc会指向一个bridge函数，这个函数为dvmCallJNIMethod，当我们在调用java native函数的时候就会进入这个bridge函数，bridge函数的作用就是调用该java native方法对应的JNI方法。所以，我们可以这么理解，所有java native函数的执行都是通过一个名为dvmCallJNIMethod的bridge函数来实现对应JNI方法的调用的。主动注册与静态注册的区别就是，主动注册需要告诉JNI，Java方法和C函数的映射，而静态注册则按照对应的规则去查找。最后在调用逻辑上，完全一致。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p><a href="https://www.jianshu.com/p/b71aeb4ed13d" target="_blank" rel="noopener">Android JNI学习(三)——Java与Native相互调用</a></p>
+<p><a href="https://blog.csdn.net/github_37130188/article/details/89857205" target="_blank" rel="noopener">如何在jni中注册native函数，有几种注册方式?</a></p>
+<p><a href="https://www.jianshu.com/p/7328c9c5436c" target="_blank" rel="noopener">Dalvik 虚拟机的 dvmCallJNIMethod 方法</a></p>
+<p><a href="https://blog.csdn.net/hp910315/article/details/79273950" target="_blank" rel="noopener">Dalvik虚拟机中Java native方法的调用过程</a></p>
+<p><a href="https://www.jianshu.com/p/1ef556aec1cd" target="_blank" rel="noopener">JNI实现源码分析【四 函数调用】</a></p>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+  
+
+
+
+
+
+
+    </main>
+
+    <footer class="site-footer">
+  <p class="site-info">
+    Proudly powered by <a href="https://hexo.io/" target="_blank">Hexo</a> and
+    Theme by <a href="https://github.com/CodeDaraW/Hacker" target="_blank">Hacker</a>
+    </br>
+    
+    &copy; 2020 DW Jia
+    
+  </p>
+</footer>
+    
+  </div>
+</div>
+</body>
+</html>
