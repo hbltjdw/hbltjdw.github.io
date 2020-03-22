@@ -59,6 +59,142 @@
 
   
     
+    <h3 class="article-title"><a href="/2020/03/20/老虎机转轴分析/"><span>老虎机转轴分析</span></a></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2020/03/20/老虎机转轴分析/" rel="bookmark">
+        <time class="entry-date published" datetime="2020-03-20T05:53:03.000Z">
+          2020-03-20
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <h2 id="1-数据分析"><a href="#1-数据分析" class="headerlink" title="1. 数据分析"></a>1. 数据分析</h2><p>​        在我们打开老虎机游戏时，App会发送startgame的数据包，里面含有<code>reelsToSpin</code>、<code>freeSpinsReelsToSpin</code>和<code>viewReels</code>，如下图所示。</p>
+<p><img src="/2020/03/20/%E8%80%81%E8%99%8E%E6%9C%BA%E8%BD%AC%E8%BD%B4%E5%88%86%E6%9E%90/startgame.png" alt="startgame"></p>
+<p>​    接下来，我们抓取每次点击SPIN的数据包，如下图所示，里面含有每次的<code>viewReels</code></p>
+<p><img src="/2020/03/20/%E8%80%81%E8%99%8E%E6%9C%BA%E8%BD%AC%E8%BD%B4%E5%88%86%E6%9E%90/spin.png" alt="spin"></p>
+<p>​    其中2-12每一个数字代表一个图标，36、37、38…分别代表金钱50、100、150…以此类推。在上图中，本次SPIN的结果为[12,5,2,9,10] [36,8,8,4,7] [36,7,4,7,11] 3个列表，代表每次结果的3行图标。</p>
+<h2 id="多次尝试查找规律"><a href="#多次尝试查找规律" class="headerlink" title="多次尝试查找规律"></a>多次尝试查找规律</h2><p>​        我们接下来对SPIN操作进行多次重复，在不同的时间分别进行了4次重复实验，这4次每次SPIN的次数为100、72、150、150，并将每次的数据包进行保存。</p>
+<p>​        接下来，我们使用Python把数据包中的<code>viewReels</code>列表中的数据进行提取，然后<code>viewReels</code>数据是按行排列的，我们将数据的表示方式转换为列数据，共5列。如下图，每一行代表一列的数据，即[8,5,12]为第一次SPIN的第一列数据，[5,9,6]为第二次SPIN第一列数据；[7,10,8]为第一次SPIN第二列的数据,[5,10,2]为第二次SPIN第二列数据。</p>
+<p>​        <img src="/2020/03/20/%E8%80%81%E8%99%8E%E6%9C%BA%E8%BD%AC%E8%BD%B4%E5%88%86%E6%9E%90/%E5%88%97%E6%95%B0%E6%8D%AE.png" alt="列数据汇总"></p>
+<p>​        我们将列的数据汇总之后，我们分析每一列数据的数字特征。首先分析每一列每个数字的概率，我们首先分析第一列，结果如下图所示。</p>
+<p><img src="/2020/03/20/%E8%80%81%E8%99%8E%E6%9C%BA%E8%BD%AC%E8%BD%B4%E5%88%86%E6%9E%90/num_rate.png" alt="num_rate"></p>
+<p>​        由上图，我们进行了4次重复实验，每次SPIN的次数为100、72、150、150，上图为4个列表，分别代表4次实验中第一列中12个数字出现的概率。</p>
+<table>
+<thead>
+<tr>
+<th>数字</th>
+<th>4次中实验第一列中出现的概率</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>0、0、0、0</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0.010、0.018、0.015、0.031</td>
+</tr>
+<tr>
+<td>3</td>
+<td>0、0、0、0</td>
+</tr>
+<tr>
+<td>4</td>
+<td>0.030、0.023、0.026、0.046</td>
+</tr>
+<tr>
+<td>5</td>
+<td>0.090、0.107、0.100、0.106</td>
+</tr>
+<tr>
+<td>6</td>
+<td>0.087、0.089、0.091、0.133</td>
+</tr>
+<tr>
+<td>7</td>
+<td>0.037、0.065、0.04、0.046</td>
+</tr>
+<tr>
+<td>8</td>
+<td>0.053、0.032、0.02、0.048</td>
+</tr>
+<tr>
+<td>9</td>
+<td>0.080、0.112、0.108、0.122</td>
+</tr>
+<tr>
+<td>10</td>
+<td>0.013、0.023、0.017、0.033</td>
+</tr>
+<tr>
+<td>11</td>
+<td>0.077、0.154、0.115、0.157</td>
+</tr>
+<tr>
+<td>12</td>
+<td>0.107、0.159、0.084、0.111</td>
+</tr>
+</tbody></table>
+<p>​        由上表可以看到，4次实验中，第一列中均没有出现3这个数字，而在其他列中，3数字有出现。同时4次实验中，考虑到每次实验的次数均在100次上下，每一个数字出现的概率相差不大。怀疑第一列可能是按照某一串固定的数字组合构成。</p>
+<h2 id="1-startgame中reelsToSpin与freeSpinsReelsToSpin分析"><a href="#1-startgame中reelsToSpin与freeSpinsReelsToSpin分析" class="headerlink" title="1.startgame中reelsToSpin与freeSpinsReelsToSpin分析"></a>1.startgame中<code>reelsToSpin</code>与<code>freeSpinsReelsToSpin</code>分析</h2><p>​        由<code>startgame</code>的图我们可以看到，<code>reelsToSpin</code>与<code>freeSpinsReelsToSpin</code>是由10行5列的数据组合成的。即每一个startgame数据包中包含10个第一列的数字，我们怀疑SPIN的第一列数据为<code>reelsToSpin</code>与<code>freeSpinsReelsToSpin</code>中的数字随机出来的。接下来，我们对startgame 进行150次重复实验，然后提取<code>reelsToSpin</code>和<code>freeSpinsReelsToSpin</code>的数据，同样按照列进行组合，数据格式如下图，其中每一行表示每一次startgame中第一列的数据，一共150行。</p>
+<p><img src="/2020/03/20/%E8%80%81%E8%99%8E%E6%9C%BA%E8%BD%AC%E8%BD%B4%E5%88%86%E6%9E%90/startgame1.png" alt="startgame第一列数据"></p>
+<p>​        上图中第三行 [1,1,1,11,6,9,5,4,11,6]与第五行[1,1,11,6,9,5,4,11,6,12] 可以组合成[1,1,1,11,6,9,5,4,11,6,12]  11个数字，同理，上述150行数据可以组合成64个数字组合，如下图所示。</p>
+<p><img src="/2020/03/20/%E8%80%81%E8%99%8E%E6%9C%BA%E8%BD%AC%E8%BD%B4%E5%88%86%E6%9E%90/%E7%AC%AC%E4%B8%80%E5%88%97.png" alt="第一列`reelsToSpin`与`freeSpinsReelsToSpin`"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">reelsToSpin: 64</span><br><span class="line">12, 6, 11, 4, 9, 12, 6, 9, 5, 12, 8, 6, 10, 2, 9, 5, 12, 7, 11, 5, 9, 6, 1, 1, 1, 11, 6, 9, 5, 4, 11, 6, 12, 5, 11, 12, 1, 1, 1, 6, 9, 5, 12, 10, 6, 11, 2, 9, 12, 7, 11, 4, 8, 5, 12, 6, 11, 9, 5, 8, 1, 1, 1, 11</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">freeSpinsReelsToSpin:58</span><br><span class="line">5, 8, 4, 11, 9, 7, 12, 6, 11, 4, 9, 12, 6, 9, 5, 12, 8, 6, 10, 2, 9, 5, 12, 7, 11, 5, 9, 6, 4, 12, 11, 6, 9, 5, 4, 11, 6, 12, 5, 11, 12, 6, 9, 5, 12, 10, 6, 11, 2, 9, 12, 7, 11, 4, 8, 5, 12, 6</span><br></pre></td></tr></table></figure>
+
+<p>​        根据我们对第一列4次重复实验中数字概率的分析，第一列中1和3出现的概率为0，我们可以看到有startgame分析出的第一列<code>reelsToSpin</code>和<code>freeSpinsReelsToSpin</code>中是没有3的，符合。但是里面是包含1的。</p>
+<p>​        接下来，我们验证每次spin的结果和<code>reelsToSpin</code>的关系</p>
+<p><img src="/2020/03/20/%E8%80%81%E8%99%8E%E6%9C%BA%E8%BD%AC%E8%BD%B4%E5%88%86%E6%9E%90/%E7%AC%AC%E4%B8%80%E5%88%97%E9%AA%8C%E8%AF%81.png" alt="第一列验证代码"></p>
+<p>​        我们将<code>reelsToSpin</code>和<code>freeSpinsReelsToSpin</code> 中所有3个数字的顺序组合放入到buff列表中，然后判断重复实验中第一列的（如图 列数据汇总）的3个数字，我们将不在<code>reelsToSpin</code>和<code>freeSpinsReelsToSpin</code> 中的数字打印出来，具体如图第一列验证代码，最后输出结果为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line">[12, 36, 36]</span><br><span class="line">[36, 44, 39]</span><br><span class="line">[15, 6, 9]</span><br><span class="line">[26, 56, 52]</span><br><span class="line">[26, 48, 52]</span><br><span class="line">[26, 50, 55]</span><br><span class="line">[26, 54, 50]</span><br><span class="line">[26, 52, 50]</span><br><span class="line">[12, 36, 39]</span><br><span class="line">[5, 8, 37]</span><br><span class="line">[9, 6, 37]</span><br><span class="line">[18, 16, 6]</span><br><span class="line">[29, 27, 52]</span><br><span class="line">[29, 27, 49]</span><br><span class="line">[29, 27, 52]</span><br><span class="line">[29, 27, 50]</span><br><span class="line">[29, 27, 51]</span><br><span class="line">[29, 27, 50]</span><br><span class="line">[29, 27, 57]</span><br><span class="line">[29, 27, 14]</span><br><span class="line">[29, 27, 25]</span><br><span class="line">[29, 27, 25]</span><br><span class="line">[29, 27, 25]</span><br><span class="line">[11, 12, 36]</span><br><span class="line">[39, 36, 37]</span><br><span class="line">[5, 8, 41]</span><br><span class="line">[37, 39, 36]</span><br><span class="line">[15, 14, 14]</span><br><span class="line">[26, 25, 25]</span><br><span class="line">[26, 25, 25]</span><br><span class="line">[26, 25, 25]</span><br><span class="line">[26, 25, 25]</span><br><span class="line">[26, 25, 25]</span><br><span class="line">[26, 25, 25]</span><br><span class="line">[26, 25, 25]</span><br><span class="line">[26, 25, 25]</span><br><span class="line">[26, 25, 25]</span><br><span class="line">[37, 36, 39]</span><br><span class="line">[36, 11, 6]</span><br><span class="line">[56, 54, 49]</span><br><span class="line">[49, 53, 54]</span><br><span class="line">[52, 49, 49]</span><br><span class="line">[52, 50, 53]</span><br><span class="line">[14, 56, 49]</span><br><span class="line">[25, 47, 50]</span><br><span class="line">[25, 15, 51]</span><br><span class="line">[25, 26, 55]</span><br><span class="line">[25, 26, 48]</span><br><span class="line">[25, 26, 52]</span><br><span class="line">[25, 26, 50]</span><br><span class="line">[25, 26, 47]</span><br><span class="line">[25, 26, 48]</span><br><span class="line">[25, 26, 56]</span><br><span class="line">[25, 26, 48]</span><br><span class="line">[37, 42, 11]</span><br><span class="line">[36, 37, 36]</span><br><span class="line">[36, 41, 36]</span><br><span class="line">[36, 36, 11]</span><br><span class="line">[38, 40, 11]</span><br><span class="line">[36, 36, 37]</span><br><span class="line">[37, 11, 9]</span><br><span class="line">[36, 11, 9]</span><br><span class="line">[5, 8, 37]</span><br><span class="line">[37, 11, 6]</span><br><span class="line">[38, 37, 11]</span><br><span class="line">[16, 14, 15]</span><br></pre></td></tr></table></figure>
+
+<p>​        我们可以看到，所有的结果均包含大于12的数字，即包含金钱图标，所以第一列中不包含金钱图标的数字组合均在<code>reelsToSpin</code>和<code>freeSpinsReelsToSpin</code> 中。</p>
+<p>​        接下来我们可以将包含 <em>金钱图标和小于等于12数字</em> 的组合提取出来如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[12, 36, 36]</span><br><span class="line">[15, 6, 9]</span><br><span class="line">[12, 36, 39]</span><br><span class="line">[5, 8, 37]</span><br><span class="line">[9, 6, 37]</span><br><span class="line">[18, 16, 6]</span><br><span class="line">[11, 12, 36]</span><br><span class="line">[5, 8, 41]</span><br><span class="line">[36, 11, 6]</span><br><span class="line">[37, 11, 9]</span><br><span class="line">[36, 11, 9]</span><br><span class="line">[5, 8, 37]</span><br><span class="line">[37, 11, 6]</span><br><span class="line">[38, 37, 11]</span><br></pre></td></tr></table></figure>
+
+<p>​        上文提到，每次SPIN时第一列的数字中1的概率为0，但是在第一列的<code>reelsToSpin</code>和<code>freeSpinsReelsToSpin</code> 中出现了数字1，我们把1与周围的数字拿出来如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">9, 6, 1, 1, 1, 11, 6</span><br><span class="line">11, 12, 1, 1, 1, 6, 9</span><br><span class="line">5, 8, 1, 1, 1, 11</span><br></pre></td></tr></table></figure>
+
+<p>​        以上两个结合起来，我们可以发现如果把1换成金钱，则完全符合，因此当转轴中出现1时，即会变成金钱图标，同时由[5, 8, 37]和[5, 8, 41] 可以看出同一个 1可以代表不同金额的金钱。我们也可以合理推测，当三个金钱图标出现时，即为[1,1,1]组合。</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>1.每次SPIN第一列的三个数字组合由<code>reelsToSpin</code>和<code>freeSpinsReelsToSpin</code> 中的数字组成，且顺序固定。</p>
+<p>2.当第一列3个数字的组合中包含数字1时，转变为大于36的数字，即金钱图标。</p>
+<p>​        </p>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+
+
+  <article>
+
+  
+    
     <h3 class="article-title"><a href="/2020/01/27/Native函数调用/"><span>Native函数调用</span></a></h3>
     
   
@@ -684,78 +820,6 @@
 <p>在工程目录下，找到 proguard-rules.pro 文件，它就是你要进行编写混淆配置的文件，在这个文件中编写混淆规则</p>
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a href="https://www.jianshu.com/p/48d6bce58e47" target="_blank" rel="noopener">Android studio 混淆配置</a></p>
 <p><a href="https://www.jianshu.com/p/60e82aafcfd0" target="_blank" rel="noopener">Android Proguard(混淆)</a></p>
-
-      
-    </div>
-
-  </div>
-
-  <div class="article-footer">
-    <div class="article-meta pull-left">
-
-    
-
-    
-
-    </div>
-
-    
-  </div>
-</article>
-
-
-
-  <article>
-
-  
-    
-    <h3 class="article-title"><a href="/2019/11/06/常见Android文件格式/"><span>常见Android文件格式</span></a></h3>
-    
-  
-
-  <div class="article-top-meta">
-    <span class="posted-on">
-      <a href="/2019/11/06/常见Android文件格式/" rel="bookmark">
-        <time class="entry-date published" datetime="2019-11-06T11:55:08.000Z">
-          2019-11-06
-        </time>
-      </a>
-    </span>
-  </div>
-
-
-  
-
-  <div class="article-content">
-    <div class="entry">
-      
-        <h2 id="库文件"><a href="#库文件" class="headerlink" title="库文件"></a>库文件</h2><p>　　库文件是一系列代码功能接口与资源数据的有机集合,在开发兼容不同版本系统的apk程序时,需要引入Android SDK中不同版本的android.jar文件.</p>
-<h3 id="jar包"><a href="#jar包" class="headerlink" title="jar包"></a>jar包</h3><p>　　jar包其实是一个zip格式的文件,里面存放着编译后JAVA代码的class文件的集合.</p>
-<p>　　分析jar包:</p>
-<ol>
-<li><p>静态分析</p>
-<p>　　使用jd-gui这类jar查看工具</p>
-</li>
-<li><p>动态分析</p>
-<p>　　PC平台上可以使用与系统特性相关的工具Dtrace或soot对jar包中的文件进行运行时跟踪</p>
-<pre><code> 　　在Android平台中,需要将jar包集成到自己编写的apk中,再对需要分析的jar包中的类与方法进行插桩和运行时分析.</code></pre></li>
-</ol>
-<h3 id="aar包"><a href="#aar包" class="headerlink" title="aar包"></a>aar包</h3><p>　　android studio将aar文件作为全新的库文件格式,aar除了可以包含代码,还可以包含任何在开发中使用的资源数据.</p>
-<p>　　aar目录结构与apk文件类似,<code>class.jar</code>包含aar库文件中所有代码生成后的class文件,<code>res</code>目录存放所有资源,</p>
-<p><code>aidl</code>目录存放了AIDL接口文件,<code>assets</code>目录中存放了Assets资源.<code>jni</code>目录中存放了编译好的不同版本的so库,<code>libs</code>目录中存放了aar包引用的第三方jar包,AndroidManifest.xml文件可用于定义aar包的名称,编译器版本等.</p>
-<p>​        </p>
-<h2 id="classes-dex"><a href="#classes-dex" class="headerlink" title="classes.dex"></a>classes.dex</h2><h3 id="dex文件验证与优化"><a href="#dex文件验证与优化" class="headerlink" title="dex文件验证与优化"></a>dex文件验证与优化</h3><p>　　为了使Android程序在Dalvik虚拟机中快速,顺畅运行,有必要对Dex文件进行验证与优化,Android提供了一个专门验证与优化DEX文件的工具dexopt.</p>
-<h3 id="dex文件修改"><a href="#dex文件修改" class="headerlink" title="dex文件修改"></a>dex文件修改</h3><p>　　使用IDA pro定位代码,然后进行修改,修改之后的dex文件其checksum与signature字段是错误的.需要进行修正.修正方法:</p>
-<ol>
-<li>使用010 Editor编辑器,配合脚本功能Dexfixer.lsc</li>
-<li>dex2jar提供的工具d2j-dex-recompute-checksum</li>
-</ol>
-<h3 id="MultiDex"><a href="#MultiDex" class="headerlink" title="MultiDex"></a>MultiDex</h3><p>　　<code>MultiDex</code>称为dex分包技术.</p>
-<p>　　</p>
-<h2 id="AndroidManifest-xml"><a href="#AndroidManifest-xml" class="headerlink" title="AndroidManifest.xml"></a>AndroidManifest.xml</h2><p>　　AndroidManifest.xml 文件存放了APK的大量配置信息.</p>
-<p>　　在Android studio编译APK时,会将AndroidManifest.xml处理后打包进去.打包进去的AndroidManifest.xml被编译为AXML的二进制文件.</p>
-<h2 id="resources-arsc"><a href="#resources-arsc" class="headerlink" title="resources.arsc"></a>resources.arsc</h2><p>　　连接代码与资源的桥梁是R.java,该文件保存的是不同类型的资源的ID值.一个资源包含资源的名称,类型,值以及所在的package,resources.arsc包含不同语言环境中res目录下所有资源的类型,名称与ID所对应的信息.</p>
-<h2 id="META-INF目录"><a href="#META-INF目录" class="headerlink" title="META-INF目录"></a>META-INF目录</h2><p> 　　存放于APK签名有关的信息</p>
 
       
     </div>

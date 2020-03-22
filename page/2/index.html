@@ -59,6 +59,78 @@
 
   
     
+    <h3 class="article-title"><a href="/2019/11/06/常见Android文件格式/"><span>常见Android文件格式</span></a></h3>
+    
+  
+
+  <div class="article-top-meta">
+    <span class="posted-on">
+      <a href="/2019/11/06/常见Android文件格式/" rel="bookmark">
+        <time class="entry-date published" datetime="2019-11-06T11:55:08.000Z">
+          2019-11-06
+        </time>
+      </a>
+    </span>
+  </div>
+
+
+  
+
+  <div class="article-content">
+    <div class="entry">
+      
+        <h2 id="库文件"><a href="#库文件" class="headerlink" title="库文件"></a>库文件</h2><p>　　库文件是一系列代码功能接口与资源数据的有机集合,在开发兼容不同版本系统的apk程序时,需要引入Android SDK中不同版本的android.jar文件.</p>
+<h3 id="jar包"><a href="#jar包" class="headerlink" title="jar包"></a>jar包</h3><p>　　jar包其实是一个zip格式的文件,里面存放着编译后JAVA代码的class文件的集合.</p>
+<p>　　分析jar包:</p>
+<ol>
+<li><p>静态分析</p>
+<p>　　使用jd-gui这类jar查看工具</p>
+</li>
+<li><p>动态分析</p>
+<p>　　PC平台上可以使用与系统特性相关的工具Dtrace或soot对jar包中的文件进行运行时跟踪</p>
+<pre><code> 　　在Android平台中,需要将jar包集成到自己编写的apk中,再对需要分析的jar包中的类与方法进行插桩和运行时分析.</code></pre></li>
+</ol>
+<h3 id="aar包"><a href="#aar包" class="headerlink" title="aar包"></a>aar包</h3><p>　　android studio将aar文件作为全新的库文件格式,aar除了可以包含代码,还可以包含任何在开发中使用的资源数据.</p>
+<p>　　aar目录结构与apk文件类似,<code>class.jar</code>包含aar库文件中所有代码生成后的class文件,<code>res</code>目录存放所有资源,</p>
+<p><code>aidl</code>目录存放了AIDL接口文件,<code>assets</code>目录中存放了Assets资源.<code>jni</code>目录中存放了编译好的不同版本的so库,<code>libs</code>目录中存放了aar包引用的第三方jar包,AndroidManifest.xml文件可用于定义aar包的名称,编译器版本等.</p>
+<p>​        </p>
+<h2 id="classes-dex"><a href="#classes-dex" class="headerlink" title="classes.dex"></a>classes.dex</h2><h3 id="dex文件验证与优化"><a href="#dex文件验证与优化" class="headerlink" title="dex文件验证与优化"></a>dex文件验证与优化</h3><p>　　为了使Android程序在Dalvik虚拟机中快速,顺畅运行,有必要对Dex文件进行验证与优化,Android提供了一个专门验证与优化DEX文件的工具dexopt.</p>
+<h3 id="dex文件修改"><a href="#dex文件修改" class="headerlink" title="dex文件修改"></a>dex文件修改</h3><p>　　使用IDA pro定位代码,然后进行修改,修改之后的dex文件其checksum与signature字段是错误的.需要进行修正.修正方法:</p>
+<ol>
+<li>使用010 Editor编辑器,配合脚本功能Dexfixer.lsc</li>
+<li>dex2jar提供的工具d2j-dex-recompute-checksum</li>
+</ol>
+<h3 id="MultiDex"><a href="#MultiDex" class="headerlink" title="MultiDex"></a>MultiDex</h3><p>　　<code>MultiDex</code>称为dex分包技术.</p>
+<p>　　</p>
+<h2 id="AndroidManifest-xml"><a href="#AndroidManifest-xml" class="headerlink" title="AndroidManifest.xml"></a>AndroidManifest.xml</h2><p>　　AndroidManifest.xml 文件存放了APK的大量配置信息.</p>
+<p>　　在Android studio编译APK时,会将AndroidManifest.xml处理后打包进去.打包进去的AndroidManifest.xml被编译为AXML的二进制文件.</p>
+<h2 id="resources-arsc"><a href="#resources-arsc" class="headerlink" title="resources.arsc"></a>resources.arsc</h2><p>　　连接代码与资源的桥梁是R.java,该文件保存的是不同类型的资源的ID值.一个资源包含资源的名称,类型,值以及所在的package,resources.arsc包含不同语言环境中res目录下所有资源的类型,名称与ID所对应的信息.</p>
+<h2 id="META-INF目录"><a href="#META-INF目录" class="headerlink" title="META-INF目录"></a>META-INF目录</h2><p> 　　存放于APK签名有关的信息</p>
+
+      
+    </div>
+
+  </div>
+
+  <div class="article-footer">
+    <div class="article-meta pull-left">
+
+    
+
+    
+
+    </div>
+
+    
+  </div>
+</article>
+
+
+
+  <article>
+
+  
+    
     <h3 class="article-title"><a href="/2019/11/04/Dalvik可执行格式与字节码规范/"><span>Dalvik可执行格式与字节码规范</span></a></h3>
     
   
@@ -698,58 +770,6 @@
 <hr>
 <h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><hr>
 <p><a href="https://www.jianshu.com/p/a21ed1e90da0" target="_blank" rel="noopener">NDK 简介（Java使用原生代码）</a></p>
-
-      
-    </div>
-
-  </div>
-
-  <div class="article-footer">
-    <div class="article-meta pull-left">
-
-    
-
-    
-
-    </div>
-
-    
-  </div>
-</article>
-
-
-
-  <article>
-
-  
-    
-    <h3 class="article-title"><a href="/2019/10/23/aidl简介/"><span>aidl简介</span></a></h3>
-    
-  
-
-  <div class="article-top-meta">
-    <span class="posted-on">
-      <a href="/2019/10/23/aidl简介/" rel="bookmark">
-        <time class="entry-date published" datetime="2019-10-22T16:36:15.000Z">
-          2019-10-23
-        </time>
-      </a>
-    </span>
-  </div>
-
-
-  
-
-  <div class="article-content">
-    <div class="entry">
-      
-        <h2 id="AIDL简介"><a href="#AIDL简介" class="headerlink" title="AIDL简介"></a>AIDL简介</h2><hr>
-<p>​        <code>AIDL</code>是一个缩写，全称是<code>Android Interface Definition Language</code>，也就是Android接口定义语言。是的，首先我们知道的第一点就是：<code>AIDL</code>是一种语言。</p>
-<p>​         设计<code>AIDL</code>这门语言的目的就是为了实现进程间通信。 </p>
-<p>​         其实<code>AIDL</code>这门语言非常的简单，基本上它的语法和<code>Java</code>是一样的，只是在一些细微处有些许差别.</p>
-<hr>
-<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><hr>
-<p><a href="https://www.jianshu.com/p/29999c1a93cd" target="_blank" rel="noopener">Android AIDL使用详解</a></p>
 
       
     </div>
